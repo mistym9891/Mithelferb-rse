@@ -1,0 +1,51 @@
+# Caddy erledigt TLS-Zertifikate (Let's Encrypt) vollautomatisch und erneuert
+# sie selbstständig. HTTPS ist Pflicht: ohne TLS lässt sich die App nicht zum
+# Startbildschirm hinzufügen und der Service Worker wird nicht aktiv.
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	# API, Anmeldung und Echtzeit-Verbindung an das Backend weiterreichen.
+	handle /api/* {
+		reverse_proxy backend:5000
+	}
+	handle /auth/* {
+		reverse_proxy backend:5000
+	}
+	handle /socket.io/* {
+		reverse_proxy backend:5000
+	}
+
+	# Alles andere ist die gebaute Single-Page-App.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		# Interne App – nicht in Suchmaschinen aufnehmen.
+		X-Robots-Tag "noindex, nofollow"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	# Der Service Worker darf nie aus dem Cache kommen, sonst bleiben
+	# Aktualisierungen der App bei den Benutzern hängen.
+	@sw path /sw.js
+	header @sw Cache-Control "no-cache, no-store, must-revalidate"
+
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}

@@ -1,0 +1,119 @@
+# Produktivbetrieb (Hetzner Cloud, Standort Deutschland).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Alle Dienste starten nach einem Neustart des Servers automatisch wieder
+# ("restart: unless-stopped"), damit die App rund um die Uhr erreichbar ist.
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: mithelfer_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      # Zeitzone der Datenbank – die Anwendung rechnet ohnehin in Europe/Berlin.
+      TZ: Europe/Berlin
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backups:/backups
+    # Kein Port nach außen: die Datenbank ist nur im Docker-Netz erreichbar.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  backend:
+    build: ./backend
+    container_name: mithelfer_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TZ: Europe/Berlin
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_URL: https://${APP_DOMAIN}
+      FRONTEND_URL: https://${APP_DOMAIN}
+      # Optional – ohne SMTP läuft alles, die Administratoren sehen die
+      # Passwortanfragen dann nur in der App.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Geokodier-Zwischenspeicher und Rohdaten bleiben über Neustarts erhalten.
+      - ./backend/data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:5000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: mithelfer_web
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    depends_on:
+      - backend
+    volumes:
+      - caddy_data:/data     # Zertifikate – MUSS erhalten bleiben
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # Tägliche Sicherung der Datenbank um 02:30 Uhr, 30 Tage Aufbewahrung.
+  backup:
+    image: postgis/postgis:16-3.4
+    container_name: mithelfer_backup
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      TZ: Europe/Berlin
+    volumes:
+      - ./backups:/backups
+      - ./deploy/backup.sh:/backup.sh:ro
+    entrypoint: ["/bin/bash", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+  caddy_logs:

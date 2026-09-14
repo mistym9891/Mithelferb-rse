@@ -1,0 +1,13 @@
+# Im Repository einheitlich LF, im Arbeitsverzeichnis plattformüblich.
+* text=auto eol=lf
+
+# Skripte, die auf dem Linux-Server laufen, brauchen zwingend LF.
+*.sh text eol=lf
+Dockerfile* text eol=lf
+Caddyfile text eol=lf
+
+# Binärdateien nicht anfassen.
+*.png binary
+*.jpg binary
+*.xlsx binary
+*.pdf binary

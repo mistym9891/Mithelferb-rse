@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Abhängigkeiten und Build-Ergebnisse
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+*.tsbuildinfo
+
+# ---------------------------------------------------------------------------
+# Geheimnisse – dürfen NIE in die Versionsverwaltung
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.prod
+backend/.env
+*.pem
+*.key
+
+# ---------------------------------------------------------------------------
+# Personenbezogene Daten (DSGVO)
+#
+# Diese Dateien enthalten echte Beschäftigtendaten – Vor- und Nachnamen,
+# Wohnorte, Geschlecht sowie Namen, Telefonnummern und E-Mail-Adressen der
+# Einsatzleitungen. Sie gehören NICHT in ein Code-Repository, auch nicht in ein
+# privates: der Zweck der Verarbeitung ist die Einsatzvermittlung, nicht die
+# Ablage bei einem Code-Hoster.
+#
+# Für den Betrieb werden sie direkt auf den Server gelegt (siehe
+# deploy/SERVER-SETUP.md, Abschnitt 7) und dort eingelesen.
+# ---------------------------------------------------------------------------
+backend/data/Staff.xlsx
+BHD_Mitarbeiter_komplett_Excelaufstellung.xlsx
+Screenshots/
+*.zip
+
+# Interne Unterlagen mit Namen und Kontaktdaten
+*.docx
+*.odt
+Anfordeungen, Maschienenring app
+Prompt for claudecode.txt
+
+# ---------------------------------------------------------------------------
+# Große bzw. erzeugte Daten
+# ---------------------------------------------------------------------------
+# 64-MB-Datensatz des BKG – wird auf dem Server heruntergeladen
+backend/data/vg250/
+backend/data/geocode-cache.json
+/backups/

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>Maschinenringe – Mithelferbörse</title>
+    <meta name="description" content="Interne App der Maschinenringe: freie Betriebshelfer/innen auf Karte und in Tabelle." />
+
+    <!-- Progressive Web App: über Link/QR-Code erreichbar, per "Zum Startbildschirm
+         hinzufügen" installierbar – kein App-Store nötig. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#4a7c2f" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+
+    <!-- iOS/iPadOS: Homescreen-Installation -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Mithelferbörse" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Interne App: nicht von Suchmaschinen indexieren -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <script>
+      // Theme vor dem ersten Rendern setzen, damit es nicht kurz hell aufblitzt.
+      (function () {
+        try {
+          var c = localStorage.getItem('theme') || 'system';
+          var dark = c === 'dark' || (c === 'system' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#111827');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

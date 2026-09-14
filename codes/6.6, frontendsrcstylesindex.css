@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* leaflet styles */
+@import 'leaflet/dist/leaflet.css';
+
+/* react-toastify styles */
+@import 'react-toastify/dist/ReactToastify.css';
+
+/* custom marker colors (optional) */
+.leaflet-div-icon {
+  background: transparent;
+  border: none;
+}

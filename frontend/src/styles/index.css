@@ -1,0 +1,150 @@
+/* Third-party stylesheets must precede the Tailwind directives. */
+@import 'leaflet/dist/leaflet.css';
+@import 'react-toastify/dist/ReactToastify.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* Verhindert, dass iOS Safari beim Drehen die Schrift vergrößert. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* Randbereiche bei Geräten mit Notch / Home-Indikator freihalten. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    overscroll-behavior-y: none;
+  }
+
+  /* Auf iOS zoomt Safari beim Fokus in ein Feld mit Schrift < 16px hinein. */
+  @media (max-width: 640px) {
+    input, select, textarea { font-size: 16px; }
+  }
+}
+
+/* Marker buttons are drawn with a DivIcon – strip Leaflet's default chrome. */
+.leaflet-div-icon,
+.staff-marker {
+  background: transparent;
+  border: none;
+}
+
+.staff-marker-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font: 700 12px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #1f2937;
+  padding: 5px 9px;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.staff-marker-female { background: #f9a8d4; }
+.staff-marker-male   { background: #93c5fd; }
+.staff-marker-unknown{ background: #d1d5db; }
+
+/* Noch nicht begonnene Zeiträume: gestrichelter Rand, etwas transparenter. */
+.staff-marker-upcoming {
+  border-style: dashed;
+  border-color: #b45309;
+  opacity: 0.8;
+}
+
+.office-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: #4a7c2f;
+  border: 2px solid #fff;
+  color: #fff;
+  font: 700 12px/1 system-ui, sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Auf Touch-Geräten etwas größere Marker, damit sie gut treffbar sind. */
+@media (pointer: coarse) {
+  .staff-marker-button { padding: 7px 11px; font-size: 13px; }
+  .office-marker { width: 26px; height: 26px; }
+}
+
+/* ------------------------------- Dunkelmodus ------------------------------ */
+.dark .staff-marker-button { color: #111827; border-color: #374151; }
+.dark .office-marker { border-color: #1f2937; }
+
+.dark .leaflet-container { background: #1f2937; }
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+.dark .leaflet-popup-close-button { color: #9ca3af !important; }
+
+.dark .leaflet-bar a,
+.dark .leaflet-bar a:hover {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+.dark .leaflet-control-attribution {
+  background: rgba(31, 41, 55, 0.85) !important;
+  color: #9ca3af;
+}
+.dark .leaflet-control-attribution a { color: #93c5fd; }
+
+.dark .leaflet-tooltip {
+  background: #1f2937;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+.dark .leaflet-tooltip-top::before   { border-top-color: #1f2937; }
+.dark .leaflet-tooltip-bottom::before{ border-bottom-color: #1f2937; }
+.dark .leaflet-tooltip-left::before  { border-left-color: #1f2937; }
+.dark .leaflet-tooltip-right::before { border-right-color: #1f2937; }
+
+/* Dunkelmodus-Karte: Standard-OSM-Kacheln invertiert und entsättigt.
+   Die Farbdrehung stellt sicher, dass Wasser blau und Wald grün bleiben.
+   Die Regel hängt an `.dark`, damit ein Themenwechsel sofort greift – auch für
+   bereits geladene Kacheln und ohne die Kartenebene neu aufzubauen. */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9) saturate(0.85);
+}
+
+/* Detail-Tooltip beim Überfahren eines Mitarbeiter-Buttons. */
+.staff-tooltip.leaflet-tooltip {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  white-space: normal;
+  max-width: 17rem;
+  font-weight: 400;
+}
+.staff-tooltip.leaflet-tooltip-top::before { border-top-color: #d1d5db; }
+
+.dark .staff-tooltip.leaflet-tooltip {
+  background: #1f2937;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+.dark .staff-tooltip.leaflet-tooltip-top::before { border-top-color: #4b5563; }
+
+/* Auf Touchgeräten gibt es kein Hover – dort zählt das Popup beim Antippen. */
+@media (pointer: coarse) {
+  .staff-tooltip.leaflet-tooltip { display: none; }
+}
+
+/* Waagerecht scrollbare Leisten ohne sichtbaren Rollbalken (Reiterleiste). */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

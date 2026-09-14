@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Maschinen- und Betriebshilfsring Schwäbisch Hall e. V.",
+    "excelName": "Maschinen- und Betriebshilfsring Schwäbisch Hall e.V. und ASEDI GmbH",
+    "street": "Torstraße 5",
+    "town": "74532 Ilshofen",
+    "lat": 49.170072,
+    "lng": 9.9186069
+  },
+  {
+    "name": "Maschinen- und Betriebshilfsring Crailsheim e. V.",
+    "excelName": "Maschinen- & Betriebshilfsring Crailsheim e.V. und MR Agrar- und Kommunalservice GmbH",
+    "street": "Roßfelder Straße 65/4",
+    "town": "74564 Crailsheim",
+    "lat": 49.1365626,
+    "lng": 10.0720195
+  },
+  {
+    "name": "Maschinen- und Betriebshilfsring Blaufelden e. V.",
+    "excelName": "MR Blaufelden e.V. und Fritz-GmbH Allgemeine Dienstleistungen",
+    "street": "Rudolf-Diesel Straße 36",
+    "town": "74572 Blaufelden",
+    "lat": 49.2970043,
+    "lng": 9.9737329
+  },
+  {
+    "name": "Maschinen- und Betriebshilfsring Hohenlohekreis e. V.",
+    "excelName": "Maschinenring Hohenlohekreis e.V. und Öko Agrar Service GmbH",
+    "street": "Weilerwiesen 22",
+    "town": "74635 Kupferzell",
+    "lat": 49.2276928,
+    "lng": 9.6902519
+  },
+  {
+    "name": "Maschinenring Ostalb e. V.",
+    "excelName": "MR Ostalb e.V. und MR Ostalb Agrar & Service GmbH",
+    "street": "Straubenmühle 5",
+    "town": "73460 Hüttlingen",
+    "lat": 48.893566,
+    "lng": 10.0997145
+  },
+  {
+    "name": "Maschinenring östlicher Tauberkreis e. V.",
+    "excelName": "MR Östlicher Tauberkreis e.V. und MRS Maschinenring Service GmbH und Familien- und Haushaltshilfe GmbH Main-Tauber",
+    "street": "Hörle 3",
+    "town": "97993 Creglingen",
+    "lat": 49.4688744,
+    "lng": 10.0298459
+  },
+  {
+    "name": "Maschinenring Unterland e. V.",
+    "excelName": "MR Unterland e.V. e.V.",
+    "street": "Heidenbaumstraße 7",
+    "town": "74189 Weinsberg",
+    "lat": 49.1504172,
+    "lng": 9.2865471
+  }
+]
