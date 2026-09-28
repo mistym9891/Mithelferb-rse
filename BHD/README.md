@@ -27,19 +27,14 @@ Danach <http://localhost:5173> öffnen.
 
 ## Testkonten
 
-Die Zugangsdaten werden **nicht** im Repository geführt. Konten legt die
-Verwaltung in der App an (*Verwaltung → + Konto*); das Startpasswort wird dabei
-einmalig angezeigt und persönlich übergeben.
+Passwort für alle Konten: `admin123`
 
-Ein Super-Administrator wird ausschließlich auf dem Server erzeugt:
-
-```bash
-cd backend
-npm run create-superadmin -- <e-mail> "<Name>"
-```
-
-Ein Demokonto mit bekanntem Passwort gibt es bewusst nicht mehr – es wäre der
-einfachste Weg, die höchste Berechtigung zu übernehmen.
+| E-Mail                     | Name              | Ring            | Rolle                |
+|----------------------------|-------------------|-----------------|----------------------|
+| `admin@example.com`        | System-Admin      | Schwäbisch Hall | **Super-Administration** |
+| `fritz.hube@mbr-sha.de`    | Fritz Hube        | Schwäbisch Hall | Ring-Administration  |
+| `stefanie.kamm@mbr-sha.de` | Stefanie Kamm     | Schwäbisch Hall | Einsatzleitung       |
+| `rschmitz@mr-hok.de`       | Rosemarie Schmitz | Hohenlohekreis  | Ring-Administration  |
 
 ## Rollen
 
@@ -49,13 +44,8 @@ einfachste Weg, die höchste Berechtigung zu übernehmen.
 | **Ring-Administration** | Benutzerkonten **des eigenen Rings** anlegen, ändern, sperren, löschen; Passwörter zurücksetzen; Passwortanfragen des eigenen Rings bearbeiten. |
 | **Einsatzleitung** | Alle freien Kräfte sehen, eigene Mitarbeiter pflegen und frei melden. Keine Benutzerverwaltung. |
 
-**Super-Administration ist für Ring-Administratoren unsichtbar.** Das Konto
-liegt organisatorisch in einem Ring (nur als Startposition der Karte), taucht
-aber in keiner Ringverwaltung auf und lässt sich von dort weder ändern noch
-sperren, löschen oder im Passwort zurücksetzen – auch nicht über den
-Zurücksetzen-Link. Der Filter sitzt in der Datenbankabfrage, die Daten werden
-also gar nicht erst übertragen. Die eigene Rolle kann niemand selbst
-hochstufen.
+Ein Ring-Administrator kann ein Super-Admin-Konto weder ändern, sperren noch
+löschen; die eigene Rolle kann niemand selbst hochstufen.
 
 ## Wachstum: beliebig viele Ringe
 

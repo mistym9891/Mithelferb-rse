@@ -19,14 +19,25 @@ const USER_FIELDS = `u.id, u.email, u.name, u.phone, u.role, u.ring_id, u.active
                      u.must_change_password, u.last_login_at, u.created_at,
                      u.terms_accepted_at, u.privacy_accepted_at, r.name AS ring_name`;
 
-// GET /api/admin/users – Ring-Admins sehen den eigenen Ring, Super-Admins alle
+/**
+ * GET /api/admin/users
+ *
+ * Ring-Administratoren sehen ausschließlich die Konten des eigenen Rings –
+ * und darin **keine** Super-Administration. Deren Konto ist organisatorisch
+ * einem Ring zugeordnet (nur als Startposition der Karte), gehört aber nicht
+ * zur Ringverwaltung. Ohne diesen Ausschluss stand die E-Mail-Adresse der
+ * Super-Administration in jeder Ringverwaltung dieses Rings.
+ *
+ * Der Filter sitzt bewusst in der Abfrage und nicht in der Oberfläche: so
+ * werden die Daten gar nicht erst übertragen.
+ */
 router.get('/users', async (req: AuthRequest, res: Response) => {
   try {
     const all = isSuperAdmin(req);
     const result = await pool.query(
       `SELECT ${USER_FIELDS}
        FROM users u JOIN rings r ON r.id = u.ring_id
-       ${all ? '' : 'WHERE u.ring_id = $1'}
+       ${all ? '' : "WHERE u.ring_id = $1 AND u.role <> 'super_admin'"}
        ORDER BY r.name, u.name NULLS LAST, u.email`,
       all ? [] : [req.user!.ringId]
     );
@@ -83,6 +94,29 @@ router.post('/users', async (req: AuthRequest, res: Response) => {
   }
 });
 
+/**
+ * Darf der Anfragende dieses Konto überhaupt anfassen?
+ *
+ * Ein Ring-Administrator darf ausschließlich Konten des eigenen Rings
+ * bearbeiten – und dort **niemals** ein Konto der Super-Administration.
+ * Deren Konto liegt organisatorisch in einem Ring (nur als Startposition der
+ * Karte); ohne diese Regel konnte ein Ring-Administrator desselben Rings das
+ * Passwort der Super-Administration zurücksetzen, ihre E-Mail-Adresse ändern
+ * oder das Konto sperren – also die höchste Berechtigung übernehmen.
+ *
+ * Gibt eine Fehlermeldung zurück oder null, wenn die Aktion erlaubt ist.
+ */
+function darfNichtHandeln(req: AuthRequest, ziel: { ring_id: number; role: string }): string | null {
+  if (isSuperAdmin(req)) return null;
+  if (ziel.role === 'super_admin') {
+    // Bewusst dieselbe Meldung wie bei fremdem Ring: die Existenz des Kontos
+    // soll nicht bestätigt werden.
+    return 'Keine Berechtigung für dieses Konto';
+  }
+  if (!mayActForRing(req, ziel.ring_id)) return 'Keine Berechtigung für diesen Ring';
+  return null;
+}
+
 const EDITABLE = ['name', 'phone', 'email', 'role', 'active'];
 
 // PUT /api/admin/users/:id
@@ -91,9 +125,8 @@ router.put('/users/:id', async (req: AuthRequest, res: Response) => {
   try {
     const cur = await pool.query('SELECT id, ring_id, role FROM users WHERE id = $1', [id]);
     if (cur.rows.length === 0) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    if (!mayActForRing(req, cur.rows[0].ring_id)) {
-      return res.status(403).json({ error: 'Keine Berechtigung für diesen Ring' });
-    }
+    const verboten = darfNichtHandeln(req, cur.rows[0]);
+    if (verboten) return res.status(403).json({ error: verboten });
 
     const updates = req.body || {};
     const fields = Object.keys(updates).filter(k => EDITABLE.includes(k));
@@ -132,11 +165,11 @@ router.put('/users/:id', async (req: AuthRequest, res: Response) => {
 router.post('/users/:id/reset-password', async (req: AuthRequest, res: Response) => {
   const id = parseInt(req.params.id);
   try {
-    const cur = await pool.query('SELECT id, name, email, ring_id FROM users WHERE id = $1', [id]);
+    const cur = await pool.query(
+      'SELECT id, name, email, ring_id, role FROM users WHERE id = $1', [id]);
     if (cur.rows.length === 0) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    if (!mayActForRing(req, cur.rows[0].ring_id)) {
-      return res.status(403).json({ error: 'Keine Berechtigung für diesen Ring' });
-    }
+    const verboten = darfNichtHandeln(req, cur.rows[0]);
+    if (verboten) return res.status(403).json({ error: verboten });
 
     const password = generatePassword();
     await pool.query(
@@ -171,12 +204,8 @@ router.delete('/users/:id', async (req: AuthRequest, res: Response) => {
   try {
     const cur = await pool.query('SELECT ring_id, role FROM users WHERE id = $1', [id]);
     if (cur.rows.length === 0) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    if (!mayActForRing(req, cur.rows[0].ring_id)) {
-      return res.status(403).json({ error: 'Keine Berechtigung für diesen Ring' });
-    }
-    if (cur.rows[0].role === 'super_admin' && !isSuperAdmin(req)) {
-      return res.status(403).json({ error: 'Ein Super-Administrator kann nur von einem Super-Administrator gelöscht werden' });
-    }
+    const verboten = darfNichtHandeln(req, cur.rows[0]);
+    if (verboten) return res.status(403).json({ error: verboten });
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
     await audit(req.user!.userId, 'user.delete', `user:${id}`);
     res.json({ success: true });
@@ -197,7 +226,7 @@ router.get('/reset-requests', async (req: AuthRequest, res: Response) => {
        JOIN users u ON u.id = p.user_id
        JOIN rings r ON r.id = u.ring_id
        WHERE p.handled_at IS NULL AND p.cancelled_at IS NULL AND p.expires_at > now()
-         ${all ? '' : 'AND u.ring_id = $1'}
+         ${all ? '' : "AND u.ring_id = $1 AND u.role <> 'super_admin'"}
        ORDER BY p.requested_at DESC`,
       all ? [] : [req.user!.ringId]
     );

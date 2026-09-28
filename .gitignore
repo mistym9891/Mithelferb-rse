@@ -45,3 +45,4 @@ Prompt for claudecode.txt
 backend/data/vg250/
 backend/data/geocode-cache.json
 /backups/
+.tools/

@@ -75,12 +75,15 @@ async function seedUsers() {
   const sha = 'Maschinen- und Betriebshilfsring Schwäbisch Hall e. V.';
   const hok = 'Maschinen- und Betriebshilfsring Hohenlohekreis e. V.';
 
-  // Genau EIN Super-Admin für ringübergreifende Administration und IT.
+  // Bewusst KEIN Super-Admin-Demokonto: ein bekanntes Konto mit bekanntem
+  // Passwort wäre der einfachste Weg, die höchste Berechtigung zu übernehmen.
+  // Super-Administratoren werden ausschließlich über
+  //   npm run create-superadmin -- <e-mail> "<Name>"
+  // angelegt; das Passwort wird dabei zufällig erzeugt und einmalig angezeigt.
   // Je Ring ein Ring-Admin, der die Benutzer des eigenen Rings verwaltet.
   // Übrige Einsatzleitungen sind 'member': sie sehen alles und pflegen die
   // eigenen Mitarbeiter, dürfen aber keine Benutzerkonten anlegen.
   const accounts = [
-    { email: 'admin@example.com',        name: 'Super-Administration (Demokonto)', ring: sha, role: 'super_admin' },
     { email: 'fritz.hube@mbr-sha.de',    name: 'Fritz Hube',            ring: sha, role: 'ring_admin' },
     { email: 'stefanie.kamm@mbr-sha.de', name: 'Stefanie Kamm',         ring: sha, role: 'member' },
     { email: 'rschmitz@mr-hok.de',       name: 'Rosemarie Schmitz',     ring: hok, role: 'ring_admin' },

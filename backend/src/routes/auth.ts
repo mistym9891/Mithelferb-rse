@@ -247,7 +247,7 @@ router.get('/reset-request/:token', authenticate, async (req: AuthRequest, res: 
   try {
     const r = await pool.query(
       `SELECT p.id, p.expires_at, p.handled_at, p.cancelled_at,
-              u.id AS user_id, u.name, u.email, u.ring_id, r.name AS ring_name
+              u.id AS user_id, u.name, u.email, u.ring_id, u.role, r.name AS ring_name
        FROM password_reset_requests p
        JOIN users u ON u.id = p.user_id
        JOIN rings r ON r.id = u.ring_id
@@ -257,8 +257,11 @@ router.get('/reset-request/:token', authenticate, async (req: AuthRequest, res: 
     if (r.rows.length === 0) return res.status(404).json({ error: 'Anfrage nicht gefunden' });
     const q = r.rows[0];
 
+    // Ring-Administratoren dürfen nur Anfragen des eigenen Rings sehen – und
+    // niemals eine Anfrage der Super-Administration, auch nicht im selben Ring.
+    // Sonst könnten sie über den Zurücksetzen-Link deren Passwort erzeugen.
     if (req.user!.role !== 'super_admin' &&
-        !(req.user!.role === 'ring_admin' && req.user!.ringId === q.ring_id)) {
+        !(req.user!.role === 'ring_admin' && req.user!.ringId === q.ring_id && q.role !== 'super_admin')) {
       return res.status(403).json({ error: 'Nur die Verwaltung des betroffenen Rings darf das bearbeiten' });
     }
 
@@ -283,7 +286,8 @@ router.post('/reset-request/:token/generate', authenticate, async (req: AuthRequ
   try {
     await client.query('BEGIN');
     const r = await client.query(
-      `SELECT p.id, p.expires_at, p.handled_at, p.cancelled_at, u.id AS user_id, u.name, u.email, u.ring_id
+      `SELECT p.id, p.expires_at, p.handled_at, p.cancelled_at,
+              u.id AS user_id, u.name, u.email, u.ring_id, u.role
        FROM password_reset_requests p JOIN users u ON u.id = p.user_id
        WHERE p.token = $1 FOR UPDATE`,
       [req.params.token]
@@ -295,9 +299,9 @@ router.post('/reset-request/:token/generate', authenticate, async (req: AuthRequ
     const q = r.rows[0];
 
     if (req.user!.role !== 'super_admin' &&
-        !(req.user!.role === 'ring_admin' && req.user!.ringId === q.ring_id)) {
+        !(req.user!.role === 'ring_admin' && req.user!.ringId === q.ring_id && q.role !== 'super_admin')) {
       await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Keine Berechtigung für diesen Ring' });
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Konto' });
     }
     if (q.handled_at) {
       await client.query('ROLLBACK');
