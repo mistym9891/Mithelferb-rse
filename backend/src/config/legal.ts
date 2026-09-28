@@ -10,17 +10,17 @@
  * dann wird die Zustimmung bei der nächsten Anmeldung erneut eingeholt.
  */
 
-export const TERMS_VERSION = '1.0';
-export const PRIVACY_VERSION = '1.0';
+export const TERMS_VERSION = '1.1';
+export const PRIVACY_VERSION = '1.1';
 
 export const TERMS_TEXT = `
-# Nutzungsbedingungen der Mithelferbörse
+# Nutzungsbedingungen der BHD-Regionalplan
 
-**Version ${TERMS_VERSION}, Stand: Januar 2026**
+**Version ${TERMS_VERSION}, Stand: September 2026**
 
 ## 1. Geltungsbereich und Zweck
 
-Die Mithelferbörse ist eine **interne Anwendung der beteiligten Maschinen- und
+Die BHD-Regionalplan ist eine **interne Anwendung der beteiligten Maschinen- und
 Betriebshilfsringe**. Sie dient ausschließlich dazu, freie Kapazitäten von
 Betriebshelfer/innen und Hauswirtschafter/innen zwischen den beteiligten Ringen
 sichtbar zu machen, damit Einsatzanfragen ringübergreifend vermittelt werden
@@ -99,9 +99,9 @@ Ansprechpartner: [BITTE PRÜFEN: Name, E-Mail, Telefon]
 `.trim();
 
 export const PRIVACY_TEXT = `
-# Datenschutzerklärung der Mithelferbörse
+# Datenschutzerklärung der BHD-Regionalplan
 
-**Version ${PRIVACY_VERSION}, Stand: Januar 2026**
+**Version ${PRIVACY_VERSION}, Stand: September 2026**
 
 ## 1. Verantwortlicher
 

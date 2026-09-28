@@ -3,14 +3,14 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../hooks/useSocket';
 import { useAutoRefresh } from '../hooks/useAutoRefresh';
-import { getRings, getRingList, getAvailableStaff } from '../api';
+import { getRings, getRingList, getRingTowns, getAvailableStaff } from '../api';
 import MapView from '../components/MapView';
 import TableView from '../components/TableView';
 import StaffManager from '../components/StaffManager';
 import AdminPanel from '../components/AdminPanel';
 import RingFilter from '../components/RingFilter';
 import { makeRingColorMap } from '../ringColors';
-import { AvailableStaff, RingInfo } from '../types';
+import { AvailableStaff, RingInfo, RingTown } from '../types';
 
 // Fallback centre: roughly Hohenlohe / Schwäbisch Hall.
 const DEFAULT_CENTER: [number, number] = [49.2, 9.9];
@@ -27,6 +27,7 @@ const Dashboard: React.FC = () => {
   const [ringFeatures, setRingFeatures] = useState<any[]>([]);
   const [ringList, setRingList] = useState<RingInfo[]>([]);
   const [staff, setStaff] = useState<AvailableStaff[]>([]);
+  const [towns, setTowns] = useState<RingTown[]>([]);
   const [selectedRings, setSelectedRings] = useState<Set<number>>(new Set());
   const [typeFilter, setTypeFilter] = useState<'' | 'agricultural' | 'urban'>('');
   const [whenFilter, setWhenFilter] = useState<'' | 'current' | 'upcoming'>('');
@@ -61,6 +62,12 @@ const Dashboard: React.FC = () => {
         setRingList(listRes.data);
         setSelectedRings(new Set(listRes.data.map(r => r.id)));
         await refreshStaff();
+
+        // Orte und Teilorte nachladen – sie werden erst beim Hineinzoomen
+        // gebraucht und sollen den ersten Bildaufbau nicht verzögern.
+        getRingTowns()
+          .then(r => setTowns(r.data))
+          .catch(() => { /* Karte funktioniert auch ohne Ortsnamen */ });
       } catch (err) {
         console.error(err);
       } finally {
@@ -312,6 +319,7 @@ const Dashboard: React.FC = () => {
             zoom={9}
             colorFor={ringColorFor}
             ringIdByName={ringIdByName}
+            towns={towns}
           />
         )}
         {tab === 'table' && <TableView data={filteredStaff} />}

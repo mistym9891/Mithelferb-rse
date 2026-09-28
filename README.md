@@ -1,4 +1,4 @@
-# Maschinenringe – Mithelferbörse
+# BHD-Regionalplan – Maschinenringe
 
 Interne Web-App, mit der die sieben Maschinenringe freie Betriebshelfer/innen und
 Hauswirtschafter/innen untereinander sichtbar machen – als Karte und als Tabelle.
@@ -201,7 +201,7 @@ Installation zum Home-Bildschirm (ab iOS 16.4). Die VAPID-Schlüssel liegen in
   auf Symbole. Safe-Area für Geräte mit Notch, 16-px-Eingabefelder gegen das
   Hineinzoomen unter iOS.
 * **Neutrale Kopfzeile** – die App wird von mehreren Ringen gemeinsam genutzt,
-  deshalb steht dort „Mithelferbörse / Maschinenringe Sozialdienst“ und kein
+  deshalb steht dort „BHD-Regionalplan / Maschinenringe Sozialdienst“ und kein
   einzelner Ringname. Der eigene Ring erscheint rechts als Zuordnung beim
   angemeldeten Benutzer.
 * **Passwortfelder** lassen sich sichtbar schalten (Auge-Symbol) – hilfreich

@@ -39,7 +39,7 @@ const Header: React.FC<{ onShare: () => void; onLogout: () => void }> = ({ onSha
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <img src="/icon-192.png" alt="" className="h-8 w-8 object-contain bg-white rounded p-0.5 shrink-0" />
         <div className="min-w-0 leading-tight">
-          <div className="font-semibold truncate text-sm sm:text-base">Mithelferbörse</div>
+          <div className="font-semibold truncate text-sm sm:text-base">BHD-Regionalplan</div>
           <div className="text-[11px] text-white/70 truncate hidden sm:block">
             Maschinenringe Sozialdienst
           </div>
@@ -122,7 +122,7 @@ const Shell: React.FC = () => {
           title="Wirklich abmelden?"
           message={
             <>
-              Sie werden von der Mithelferbörse abgemeldet
+              Sie werden von der BHD-Regionalplan abgemeldet
               {user?.name ? <> – angemeldet als <strong>{user.name}</strong></> : null}.
               Für die nächste Anmeldung werden E-Mail und Passwort wieder benötigt.
             </>

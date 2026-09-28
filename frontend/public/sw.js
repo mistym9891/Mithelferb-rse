@@ -114,7 +114,7 @@ self.addEventListener('fetch', (event) => {
  * ------------------------------------------------------------------------- */
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'Mithelferbörse', body: 'Neue Meldung', tag: 'mithelfer', url: '/dashboard' };
+  let data = { title: 'BHD-Regionalplan', body: 'Neue Meldung', tag: 'mithelfer', url: '/dashboard' };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {

@@ -221,7 +221,7 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
     if (admins.rows.length > 0) {
       await sendMail({
         to: admins.rows.map(a => a.email),
-        subject: `Mithelferbörse: Passwortanfrage von ${user.name || user.email}`,
+        subject: `BHD-Regionalplan: Passwortanfrage von ${user.name || user.email}`,
         text:
           `${user.name || user.email} (${user.ring_name}) hat ein neues Passwort angefordert.\n\n` +
           `Über folgenden Link erzeugen Sie ein neues Passwort und geben es der Person persönlich weiter:\n\n` +

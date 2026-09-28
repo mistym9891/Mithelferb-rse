@@ -93,10 +93,24 @@ export interface AvailableStaff {
 export interface RingInfo {
   id: number;
   name: string;
+  /** Kurzzeichen für die Karte, z. B. „SHA“ -> Marker „MR SHA“. */
+  short_code?: string | null;
+  office_street?: string | null;
   office_town?: string;
   office_lat?: number;
   office_lng?: number;
   website?: string | null;
+}
+
+/** Ort oder Teilort eines Rings – wird beim Hineinzoomen eingeblendet. */
+export interface RingTown {
+  id: number;
+  ring_id: number;
+  plz: string;
+  name: string;
+  district: string | null;
+  lat: number;
+  lng: number;
 }
 
 export interface AdminRing {
@@ -105,6 +119,8 @@ export interface AdminRing {
   office_town: string | null;
   office_lat: number | null;
   office_lng: number | null;
+  short_code: string | null;
+  office_street: string | null;
   website: string | null;
   boundary_source: string | null;
   has_boundary: boolean;

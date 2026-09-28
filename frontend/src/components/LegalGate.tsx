@@ -104,7 +104,7 @@ const LegalGate: React.FC<{ onAccepted: () => void; onLogout: () => void }> = ({
                     p-2 sm:p-6 overflow-y-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl flex flex-col max-h-[92dvh]">
         <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          <h2 className="text-base sm:text-lg font-bold">Willkommen bei der Mithelferbörse</h2>
+          <h2 className="text-base sm:text-lg font-bold">Willkommen bei der BHD-Regionalplan</h2>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
             Bitte lesen Sie beide Texte und stimmen Sie zu. Ohne Zustimmung ist die
             App nicht nutzbar.

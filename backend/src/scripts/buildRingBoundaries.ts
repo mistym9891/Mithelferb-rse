@@ -87,29 +87,65 @@ async function main() {
   console.log(`Ortszuordnung: ${matched} direkt, ${snapped} über Nachbarschaft, ${unmatched} ohne Gemeinde, ${noCoords} ohne Koordinaten.`);
   if (unmatchedList.length) unmatchedList.forEach(u => console.log(`  ! ${u}`));
 
-  // Gemeinden, die zwei Ringen zugeordnet wurden (überlappende Einsatzgebiete)
+  // Manche Gemeinden stehen in der Ortsliste bei mehreren Ringen, weil einzelne
+  // Teilorte unterschiedlich zugeordnet sind. Ohne Bereinigung überlappen sich
+  // die Ringflächen sichtbar – genau das war bei Fichtenau an der Grenze
+  // Crailsheim/Ostalb der Fall. Die Gemeinde bekommt den Ring mit den meisten
+  // Orten darin; bei Gleichstand entscheidet der Name, damit das Ergebnis
+  // reproduzierbar bleibt.
   const overlaps = await pool.query(
-    `SELECT g.name, COUNT(DISTINCT rg.ring_id) AS rings
+    `SELECT g.name, g.ags, COUNT(DISTINCT rg.ring_id) AS rings
      FROM ring_gemeinden rg JOIN gemeinden g ON g.ags = rg.ags
-     GROUP BY g.name HAVING COUNT(DISTINCT rg.ring_id) > 1
+     GROUP BY g.name, g.ags HAVING COUNT(DISTINCT rg.ring_id) > 1
      ORDER BY g.name`
   );
   if (overlaps.rows.length) {
-    console.log(`\n${overlaps.rows.length} Gemeinde(n) sind mehreren Ringen zugeordnet:`);
-    overlaps.rows.forEach(r => console.log(`  ~ ${r.name} (${r.rings} Ringe)`));
+    console.log(`\n${overlaps.rows.length} Gemeinde(n) standen bei mehreren Ringen – wird bereinigt:`);
+    for (const row of overlaps.rows) {
+      const winner = await pool.query(
+        `SELECT rg.ring_id, r.name, rg.town_count
+         FROM ring_gemeinden rg JOIN rings r ON r.id = rg.ring_id
+         WHERE rg.ags = $1
+         ORDER BY rg.town_count DESC, r.name ASC
+         LIMIT 1`,
+        [row.ags]
+      );
+      const keep = winner.rows[0];
+      await pool.query(
+        'DELETE FROM ring_gemeinden WHERE ags = $1 AND ring_id <> $2',
+        [row.ags, keep.ring_id]
+      );
+      console.log(`  ~ ${row.name}: ${row.rings} Ringe -> ${keep.name} (${keep.town_count} Orte)`);
+    }
+  } else {
+    console.log('\nKeine Gemeinde ist mehreren Ringen zugeordnet.');
   }
 
   // Vereinigung der Gemeindeflächen je Ring
   console.log('\nBerechne Ringgrenzen ...');
+  // Zusätzlich am Umriss Baden-Württembergs beschneiden. Die Gemeindeflächen
+  // liegen zwar ohnehin in BW, damit ist aber garantiert, dass keine Ringgrenze
+  // über die Landesgrenze nach Bayern reicht.
+  const maske = await pool.query('SELECT COUNT(*)::int AS n FROM landesgrenze WHERE id = 1');
+  if (maske.rows[0].n === 0) {
+    console.warn('  ! Kein Landesumriss vorhanden – bitte "npm run ring-directory" ausführen.');
+  }
+
   const updated = await pool.query(
     `UPDATE rings r
      SET boundary = sub.geom, boundary_source = 'official'
      FROM (
        SELECT rg.ring_id,
-              ST_Multi(ST_CollectionExtract(ST_MakeValid(ST_Union(g.geom)), 3)) AS geom
+              ST_Multi(ST_CollectionExtract(
+                ST_MakeValid(
+                  CASE WHEN l.geom IS NULL THEN ST_Union(g.geom)
+                       ELSE ST_Intersection(ST_MakeValid(ST_Union(g.geom)), l.geom)
+                  END
+                ), 3)) AS geom
        FROM ring_gemeinden rg
        JOIN gemeinden g ON g.ags = rg.ags
-       GROUP BY rg.ring_id
+       LEFT JOIN landesgrenze l ON l.id = 1
+       GROUP BY rg.ring_id, l.geom
      ) sub
      WHERE r.id = sub.ring_id
      RETURNING r.id, r.name`

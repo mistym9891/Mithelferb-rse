@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { AvailableStaff, RingInfo } from '../types';
+import { AvailableStaff, RingInfo, RingTown } from '../types';
 import { useTheme } from '../hooks/useTheme';
 import RingLink from './RingLink';
 
@@ -37,19 +37,113 @@ function staffIcon(s: AvailableStaff, stackIndex = 0, stackSize = 1): L.DivIcon 
   });
 }
 
-const officeIcon = new L.DivIcon({
-  className: 'staff-marker',
-  html: '<div class="office-marker">MR</div>',
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-});
+/**
+ * Marker der Geschäftsstelle. Zeigt das Kurzzeichen des Rings – „MR SHA“ statt
+ * nur „MR“, damit auf der Karte erkennbar ist, um welchen Ring es sich handelt.
+ * Die Breite richtet sich nach der Länge des Kurzzeichens.
+ */
+function officeIcon(shortCode?: string | null): L.DivIcon {
+  const label = shortCode ? `MR ${shortCode}` : 'MR';
+  const width = 16 + label.length * 7.4;
+  return new L.DivIcon({
+    className: 'staff-marker',
+    html: `<div class="office-marker">${label}</div>`,
+    iconSize: [width, 22],
+    iconAnchor: [width / 2, 11],
+  });
+}
 
-/** Imperatively recentre the map when the selected centre changes. */
+/**
+ * Orte und Teilorte, sobald weit genug hineingezoomt wurde.
+ *
+ * Die Ortsliste enthält auch Teilorte („Enslingen“, „Gailenkirchen“). Ab
+ * Zoomstufe 11 werden sie in der Ringfarbe eingeblendet, damit erkennbar ist,
+ * welcher Teilort zu welchem Ring gehört. Darunter wären es über 1.300 Punkte
+ * auf einmal – unlesbar und langsam.
+ */
+const MIN_TOWN_ZOOM = 11;
+
+const TownLayer: React.FC<{
+  towns: RingTown[];
+  visibleRingIds: Set<number>;
+  colorFor: (ringId: number, dark?: boolean) => string;
+  dark: boolean;
+}> = ({ towns, visibleRingIds, colorFor, dark }) => {
+  const map = useMap();
+  const [zoom, setZoom] = useState(map.getZoom());
+  const [bounds, setBounds] = useState(map.getBounds());
+
+  useEffect(() => {
+    const update = () => { setZoom(map.getZoom()); setBounds(map.getBounds()); };
+    map.on('zoomend moveend', update);
+    return () => { map.off('zoomend moveend', update); };
+  }, [map]);
+
+  if (zoom < MIN_TOWN_ZOOM) return null;
+
+  // Nur zeichnen, was im Bildausschnitt liegt – sonst hängen bei Zoomstufe 11
+  // mehrere hundert Beschriftungen im DOM.
+  const sichtbar = towns.filter(t =>
+    visibleRingIds.has(t.ring_id) && bounds.contains([t.lat, t.lng] as [number, number])
+  );
+
+  return (
+    <>
+      {sichtbar.map(t => (
+        <Marker
+          key={`town-${t.id}`}
+          position={[t.lat, t.lng]}
+          interactive={false}
+          keyboard={false}
+          icon={new L.DivIcon({
+            className: 'town-marker',
+            html:
+              `<span class="town-dot" style="background:${colorFor(t.ring_id, dark)}"></span>` +
+              `<span class="town-label">${t.name}</span>`,
+            iconSize: [0, 0],
+            iconAnchor: [4, 4],
+          })}
+        />
+      ))}
+    </>
+  );
+};
+
+/**
+ * Setzt den Kartenausschnitt auf die Geschäftsstelle des angemeldeten Rings.
+ *
+ * Wichtig: nur einmal je Zielposition und nur solange der Benutzer die Karte
+ * noch nicht selbst bewegt hat. Vorher wurde bei jedem erneuten Rendern
+ * `setView` aufgerufen – die Karte sprang dadurch nach jedem Hineinzoomen
+ * sofort wieder auf die Startansicht zurück, das Zoomen war praktisch
+ * blockiert.
+ */
 const Recenter: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
   const map = useMap();
+  const appliedRef = useRef<string>('');
+  const userMovedRef = useRef(false);
+
   useEffect(() => {
+    // Jede Bewegung durch den Benutzer schaltet das automatische Zentrieren ab.
+    const onUserMove = () => { userMovedRef.current = true; };
+    map.on('zoomstart dragstart', onUserMove);
+    return () => { map.off('zoomstart dragstart', onUserMove); };
+  }, [map]);
+
+  useEffect(() => {
+    const target = `${center[0].toFixed(5)},${center[1].toFixed(5)},${zoom}`;
+    if (appliedRef.current === target) return;      // schon angewandt
+    if (appliedRef.current !== '' && userMovedRef.current) {
+      // Ziel hat sich geändert (anderer Ring) – Benutzerposition darf
+      // überschrieben werden, danach gilt wieder „nicht hineinreden“.
+      userMovedRef.current = false;
+    } else if (userMovedRef.current) {
+      return;
+    }
+    appliedRef.current = target;
     map.setView(center, zoom);
-  }, [center[0], center[1], zoom]);
+  }, [map, center[0], center[1], zoom]);
+
   return null;
 };
 
@@ -91,10 +185,12 @@ interface MapViewProps {
   /** Farbe je Ring-ID – skaliert auf beliebig viele Ringe. */
   colorFor: (ringId: number, dark?: boolean) => string;
   ringIdByName: Map<string, number>;
+  /** Orte und Teilorte, ab Zoomstufe 11 eingeblendet. */
+  towns?: RingTown[];
 }
 
 const MapView: React.FC<MapViewProps> = ({
-  rings, offices, staff, center, zoom = 10, colorFor, ringIdByName,
+  rings, offices, staff, center, zoom = 10, colorFor, ringIdByName, towns = [],
 }) => {
   const dark = useTheme().resolved === 'dark';
   const featureColor = (name?: string) => {
@@ -162,14 +258,29 @@ const MapView: React.FC<MapViewProps> = ({
       {offices
         .filter(o => o.office_lat != null && o.office_lng != null)
         .map(o => (
-          <Marker key={`office-${o.id}`} position={[o.office_lat!, o.office_lng!]} icon={officeIcon}>
+          <Marker
+            key={`office-${o.id}`}
+            position={[o.office_lat!, o.office_lng!]}
+            icon={officeIcon(o.short_code)}
+          >
             <Popup>
               <strong><RingLink name={o.name} website={o.website} /></strong>
               <br />
-              Geschäftsstelle: {o.office_town}
+              Geschäftsstelle{o.short_code ? ` (MR ${o.short_code})` : ''}:
+              <br />
+              {o.office_street && <>{o.office_street}<br /></>}
+              {o.office_town}
             </Popup>
           </Marker>
         ))}
+
+      {/* Orte und Teilorte – erst ab Zoomstufe 11 */}
+      <TownLayer
+        towns={towns}
+        visibleRingIds={new Set(offices.map(o => o.id))}
+        colorFor={colorFor}
+        dark={dark}
+      />
 
       {placeable.map(s => (
         <Marker

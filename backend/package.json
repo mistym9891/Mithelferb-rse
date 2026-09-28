@@ -17,7 +17,8 @@
     "boundaries": "ts-node src/scripts/buildRingBoundaries.ts",
     "import-rings": "ts-node src/scripts/importRings.ts",
     "create-superadmin": "ts-node src/scripts/createSuperAdmin.ts",
-    "import-websites": "ts-node src/scripts/importWebsites.ts"
+    "import-websites": "ts-node src/scripts/importWebsites.ts",
+    "ring-directory": "ts-node src/scripts/importRingDirectory.ts"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.1",

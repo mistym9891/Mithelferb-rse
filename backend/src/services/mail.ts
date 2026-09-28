@@ -42,7 +42,7 @@ export async function sendMail(opts: {
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'Mithelferbörse <noreply@localhost>',
+      from: process.env.SMTP_FROM || 'BHD-Regionalplan <noreply@localhost>',
       to,
       subject: opts.subject,
       text: opts.text,

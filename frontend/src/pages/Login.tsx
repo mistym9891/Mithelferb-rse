@@ -53,7 +53,7 @@ const Login: React.FC = () => {
     <div className="flex-1 flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4 py-8 overflow-auto">
       <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-md w-full max-w-sm">
         <img src="/icon-192.png" alt="Maschinenring" className="h-16 w-16 mx-auto mb-4 object-contain" />
-        <h2 className="text-xl font-bold mb-1 text-center text-gray-900 dark:text-gray-100">Mithelferbörse</h2>
+        <h2 className="text-xl font-bold mb-1 text-center text-gray-900 dark:text-gray-100">BHD-Regionalplan</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center">Maschinenringe Sozialdienst</p>
 
         {mode === 'login' ? (

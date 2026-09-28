@@ -77,6 +77,10 @@ const TableView: React.FC<TableViewProps> = ({ data }) => {
         header: 'Status',
         cell: i => <StatusBadge s={i.row.original} />,
       }),
+      columnHelper.accessor('ring_name', {
+        header: 'Maschinenring',
+        cell: i => <RingLink name={i.getValue()} website={i.row.original.ring_website} />,
+      }),
       columnHelper.accessor('abbreviation', {
         header: 'Kürzel',
         cell: i => <span className={`font-bold ${abbrevColor(i.row.original)}`}>{i.getValue()}</span>,
@@ -96,10 +100,6 @@ const TableView: React.FC<TableViewProps> = ({ data }) => {
       columnHelper.accessor('hours_per_day', {
         header: 'Std./Tag',
         cell: i => <span className={`font-bold ${abbrevColor(i.row.original)}`}>{i.getValue()}</span>,
-      }),
-      columnHelper.accessor('ring_name', {
-        header: 'Maschinenring',
-        cell: i => <RingLink name={i.getValue()} website={i.row.original.ring_website} />,
       }),
       columnHelper.accessor('supervisor', { header: 'Einsatzleitung', cell: i => i.getValue() || '—' }),
       columnHelper.accessor('phone', {

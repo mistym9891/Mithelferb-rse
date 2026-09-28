@@ -81,7 +81,7 @@ router.post('/test', async (req: AuthRequest, res: Response) => {
       await webpush.sendNotification(
         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
         JSON.stringify({
-          title: 'Mithelferbörse – Testmeldung',
+          title: 'BHD-Regionalplan – Testmeldung',
           body: 'Benachrichtigungen funktionieren auf diesem Gerät.',
           tag: 'test',
         })

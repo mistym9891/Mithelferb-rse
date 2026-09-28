@@ -106,7 +106,7 @@ const InstallDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const share = async () => {
     if (navigator.share) {
-      try { await navigator.share({ title: 'Maschinenringe Mithelferbörse', url }); } catch { /* abgebrochen */ }
+      try { await navigator.share({ title: 'BHD-Regionalplan', url }); } catch { /* abgebrochen */ }
     } else copy();
   };
 

@@ -80,7 +80,7 @@ async function seedUsers() {
   // Übrige Einsatzleitungen sind 'member': sie sehen alles und pflegen die
   // eigenen Mitarbeiter, dürfen aber keine Benutzerkonten anlegen.
   const accounts = [
-    { email: 'admin@example.com',        name: 'System-Administration', ring: sha, role: 'super_admin' },
+    { email: 'admin@example.com',        name: 'Super-Administration (Demokonto)', ring: sha, role: 'super_admin' },
     { email: 'fritz.hube@mbr-sha.de',    name: 'Fritz Hube',            ring: sha, role: 'ring_admin' },
     { email: 'stefanie.kamm@mbr-sha.de', name: 'Stefanie Kamm',         ring: sha, role: 'member' },
     { email: 'rschmitz@mr-hok.de',       name: 'Rosemarie Schmitz',     ring: hok, role: 'ring_admin' },

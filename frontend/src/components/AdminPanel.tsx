@@ -377,6 +377,9 @@ const AdminPanel: React.FC<Props> = ({ me, rings, onOpenRequestsChange, reloadSi
       </div>
 
       <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+        <p className="font-medium text-gray-700 dark:text-gray-300">
+          Es gibt genau drei Rollen – eine weitere Administrationsebene existiert nicht.
+        </p>
         <p><strong>{ROLE_LABEL.super_admin}:</strong> {ROLE_HINT.super_admin}</p>
         <p><strong>{ROLE_LABEL.ring_admin}:</strong> {ROLE_HINT.ring_admin}</p>
         <p><strong>{ROLE_LABEL.member}:</strong> {ROLE_HINT.member}</p>

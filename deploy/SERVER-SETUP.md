@@ -1,4 +1,4 @@
-# Serverinstallation – Mithelferbörse
+# Serverinstallation – BHD-Regionalplan
 
 Schritt-für-Schritt-Anleitung für einen frischen Hetzner-Cloud-Server.
 Dauer: etwa 45 Minuten.

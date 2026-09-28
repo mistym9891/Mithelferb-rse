@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Maschinenringe Mithelferbörse",
-  "short_name": "Mithelferbörse",
+  "name": "BHD-Regionalplan",
+  "short_name": "BHD-Regionalplan",
   "description": "Interne App der Maschinenringe: freie Betriebshelfer/innen und Hauswirtschafter/innen auf Karte und in Tabelle.",
   "start_url": "/",
   "scope": "/",

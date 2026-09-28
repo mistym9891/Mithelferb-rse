@@ -171,3 +171,48 @@ CREATE INDEX IF NOT EXISTS idx_push_user ON push_subscriptions (user_id);
 
 -- Website des Rings (wird im Namen als Link hinterlegt)
 ALTER TABLE rings ADD COLUMN IF NOT EXISTS website TEXT;
+
+-- ---------------------------------------------------------------------------
+-- Kurzzeichen des Rings (Karte zeigt "MR SHA" statt nur "MR")
+-- ---------------------------------------------------------------------------
+ALTER TABLE rings ADD COLUMN IF NOT EXISTS short_code TEXT;
+ALTER TABLE rings ADD COLUMN IF NOT EXISTS office_street TEXT;
+
+-- ---------------------------------------------------------------------------
+-- Orte und Teilorte je Ring
+--
+-- Die Ortsliste enthält neben den Gemeinden auch Teilorte ("Enslingen",
+-- "Gailenkirchen"). Beim Hineinzoomen sollen sie auf der Karte sichtbar sein,
+-- damit erkennbar ist, welcher Teilort zu welchem Ring gehört.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ring_towns (
+  id       SERIAL PRIMARY KEY,
+  ring_id  INTEGER NOT NULL REFERENCES rings(id) ON DELETE CASCADE,
+  plz      TEXT NOT NULL,
+  name     TEXT NOT NULL,
+  district TEXT,
+  lat      DOUBLE PRECISION NOT NULL,
+  lng      DOUBLE PRECISION NOT NULL,
+  geom     GEOMETRY(Point, 4326),
+  CONSTRAINT ring_towns_unique UNIQUE (ring_id, plz, name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ring_towns_ring ON ring_towns (ring_id);
+CREATE INDEX IF NOT EXISTS idx_ring_towns_geom ON ring_towns USING GIST (geom);
+
+-- ---------------------------------------------------------------------------
+-- Umriss Baden-Württembergs
+--
+-- Die Ringgrenzen dürfen die Landesgrenze nicht überschreiten. Beim Vereinfachen
+-- der Geometrie für die Karte können Stützpunkte nach außen wandern – bei
+-- Dinkelsbühl ragte die Grenze dadurch nach Bayern hinein. Der Umriss ist die
+-- Vereinigung aller importierten Gemeinden und dient als Schnittmaske.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS landesgrenze (
+  id   INTEGER PRIMARY KEY DEFAULT 1,
+  name TEXT NOT NULL,
+  geom GEOMETRY(MultiPolygon, 4326) NOT NULL,
+  CONSTRAINT landesgrenze_single CHECK (id = 1)
+);
+
+CREATE INDEX IF NOT EXISTS idx_landesgrenze_geom ON landesgrenze USING GIST (geom);

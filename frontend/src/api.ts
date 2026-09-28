@@ -1,11 +1,14 @@
 import api from './apiClient';
-import { Staff, AvailableStaff, RingInfo, User, AdminUser, ResetRequest, AuditEntry, Role, AdminRing } from './types';
+import { Staff, AvailableStaff, RingInfo, User, AdminUser, ResetRequest, AuditEntry, Role, AdminRing, RingTown } from './types';
 
 export const login = (email: string, password: string) =>
   api.post<{ token: string; user: User }>('/auth/login', { email, password });
 
 export const getRings = () => api.get<{ type: string; features: any[] }>('/api/rings');
 export const getRingList = () => api.get<RingInfo[]>('/api/rings/list');
+
+/** Orte und Teilorte für die Karte (beim Hineinzoomen). */
+export const getRingTowns = () => api.get<RingTown[]>('/api/rings/towns');
 
 export const getAvailableStaff = (params?: { ringId?: number; type?: string }) =>
   api.get<AvailableStaff[]>('/api/available-staff', { params });
