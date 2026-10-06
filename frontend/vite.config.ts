@@ -19,6 +19,6 @@ export default defineConfig({
     port: 4173,
     host: true,
     proxy,
-    allowedHosts: ['.trycloudflare.com', '.cfargotunnel.com', 'localhost'],
+    allowedHosts: ['.trycloudflare.com', '.cfargotunnel.com', '.ts.net', 'localhost'],
   },
 });

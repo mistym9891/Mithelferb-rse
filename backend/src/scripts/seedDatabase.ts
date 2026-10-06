@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import pool from '../db';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { MEMBER_RINGS } from '../config/rings';
 
 const SCHEMA_PATH   = path.join(__dirname, '../../sql/schema.sql');
@@ -69,9 +70,22 @@ async function ringIdByName(name: string): Promise<number | null> {
   return r.rows[0]?.id ?? null;
 }
 
+/**
+ * Startpasswort für ein Seed-Konto.
+ *
+ * Bewusst zufällig und nicht fest im Code: ein in der Dokumentation
+ * nachlesbares Passwort ist auf einem öffentlich erreichbaren Server das
+ * gleiche wie kein Passwort. Es wird genau einmal ausgegeben und kann
+ * danach nur noch von der Verwaltung zurückgesetzt werden.
+ */
+function startPassword(length = 14): string {
+  const alphabet = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(length);
+  return Array.from(bytes, b => alphabet[b % alphabet.length]).join('');
+}
+
 async function seedUsers() {
-  // Test accounts from the Anforderungen document (point 5) plus a demo admin.
-  const password = await bcrypt.hash('admin123', 10);
+  // Test accounts from the Anforderungen document (point 5).
   const sha = 'Maschinen- und Betriebshilfsring Schwäbisch Hall e. V.';
   const hok = 'Maschinen- und Betriebshilfsring Hohenlohekreis e. V.';
 
@@ -89,18 +103,30 @@ async function seedUsers() {
     { email: 'rschmitz@mr-hok.de',       name: 'Rosemarie Schmitz',     ring: hok, role: 'ring_admin' },
   ];
 
+  const vergeben: string[] = [];
   for (const acc of accounts) {
     const ringId = await ringIdByName(acc.ring);
     if (!ringId) { console.warn(`  ! ring not found for ${acc.email}`); continue; }
-    await pool.query(
-      `INSERT INTO users (email, password_hash, ring_id, role, name)
-       VALUES ($1,$2,$3,$4,$5)
-       ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, name = EXCLUDED.name`,
-      [acc.email, password, ringId, acc.role, acc.name]
+    const klartext = startPassword();
+    // Ein bestehendes Konto behält sein Passwort: ein erneuter Seed-Lauf darf
+    // niemandem die Anmeldung unter den Füßen wegziehen.
+    const r = await pool.query(
+      `INSERT INTO users (email, password_hash, ring_id, role, name, must_change_password)
+       VALUES ($1,$2,$3,$4,$5,TRUE)
+       ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, name = EXCLUDED.name
+       RETURNING (users.created_at > now() - interval '5 seconds') AS neu`,
+      [acc.email, await bcrypt.hash(klartext, 10), ringId, acc.role, acc.name]
     );
-    console.log(`  user ${acc.email} (${acc.role})`);
+    const neu = r.rows[0]?.neu === true;
+    console.log(`  user ${acc.email} (${acc.role})${neu ? '' : ' – Passwort unverändert'}`);
+    if (neu) vergeben.push(`  ${acc.email.padEnd(28)} ${klartext}`);
   }
-  console.log('Users seeded – password for all test accounts: admin123');
+
+  if (vergeben.length) {
+    console.log('\nStartpasswörter (werden nur jetzt angezeigt, danach nie wieder):');
+    console.log(vergeben.join('\n'));
+    console.log('Bei der ersten Anmeldung muss jedes Konto ein eigenes Passwort setzen.');
+  }
 }
 
 async function main() {

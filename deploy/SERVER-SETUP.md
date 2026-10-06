@@ -120,15 +120,27 @@ curl -L -C - -o vg250.zip \
 unzip -o vg250.zip && cd /opt/mithelferboerse
 ```
 
-## 8. Erstes Konto absichern
+## 8. Super-Administration anlegen
 
-Das Seed-Skript legt `admin@example.com` mit dem Passwort `admin123` an.
-**Sofort ändern:**
+Das Seed-Skript legt **kein** Konto mit bekanntem Passwort an – ein Demokonto
+wäre der einfachste Weg, die höchste Berechtigung zu übernehmen. Die
+Super-Administration wird einmalig auf dem Server erzeugt:
 
-1. Anmelden, Passwort über die Kontoeinstellungen ändern.
-2. Unter *Verwaltung* die echten Ring-Administratoren anlegen.
-3. Das Demokonto `admin@example.com` löschen oder auf die echte
-   E-Mail-Adresse der Super-Administration umstellen.
+```bash
+docker compose -f docker-compose.prod.yml exec backend npm run create-superadmin -- <e-mail> "<Name>"
+```
+
+Das Passwort wird dabei zufällig erzeugt und **genau einmal** ausgegeben. Es
+steht in keiner Datei und lässt sich nicht erneut anzeigen; bei Verlust wird
+der Befehl mit derselben E-Mail-Adresse wiederholt.
+
+Danach anmelden, das Passwort ändern und unter *Verwaltung* die
+Ring-Administratoren der einzelnen Ringe anlegen. Deren Startpasswörter zeigt
+die App einmalig an und werden persönlich übergeben.
+
+> Die Zugangsdaten der Super-Administration gehören **nicht** in die
+> Projektdokumentation und nicht in das Repository. Ring-Administratoren sehen
+> das Konto nicht; es erscheint in keiner Ringverwaltung.
 
 ## 9. Laufender Betrieb
 

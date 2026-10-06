@@ -26,16 +26,26 @@ if (process.env.SMTP_HOST) {
 
 export const mailConfigured = () => configured;
 
+/**
+ * `bcc` ist für Empfänger gedacht, die die übrigen Empfänger nicht kennen
+ * sollen – konkret die Super-Administration: sie wird bei Passwortanfragen
+ * mitbenachrichtigt, ihre Adresse darf aber nicht im Kopf einer Mail an
+ * Ring-Administratoren stehen.
+ */
 export async function sendMail(opts: {
   to: string | string[];
+  bcc?: string | string[];
   subject: string;
   text: string;
 }): Promise<{ sent: boolean; reason?: string }> {
   const to = Array.isArray(opts.to) ? opts.to.join(', ') : opts.to;
+  const bcc = Array.isArray(opts.bcc) ? opts.bcc.join(', ') : opts.bcc;
 
   if (!transporter) {
     console.log(
-      `[Mail nicht konfiguriert] An: ${to}\nBetreff: ${opts.subject}\n${opts.text}\n`
+      `[Mail nicht konfiguriert] An: ${to}` +
+      `${bcc ? ` (+${bcc.split(',').length} verdeckt)` : ''}` +
+      `\nBetreff: ${opts.subject}\n${opts.text}\n`
     );
     return { sent: false, reason: 'SMTP nicht konfiguriert' };
   }
@@ -44,6 +54,7 @@ export async function sendMail(opts: {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'BHD-Regionalplan <noreply@localhost>',
       to,
+      ...(bcc ? { bcc } : {}),
       subject: opts.subject,
       text: opts.text,
     });

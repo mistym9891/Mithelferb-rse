@@ -46,3 +46,7 @@ backend/data/vg250/
 backend/data/geocode-cache.json
 /backups/
 .tools/
+
+# Unterlagen fuer den Kundentest: enthalten Zugangsdaten und eine nur
+# zeitweise gueltige oeffentliche Adresse. Gehoert nicht ins Repository.
+zugang/

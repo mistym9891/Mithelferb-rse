@@ -204,10 +204,15 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
 
     // Zuständige Administratoren ermitteln
     const admins = await pool.query(
-      `SELECT email, name FROM users
+      `SELECT email, name, role FROM users
        WHERE active AND (role = 'super_admin' OR (role = 'ring_admin' AND ring_id = $1))`,
       [user.ring_id]
     );
+    // Die Ringverwaltung bearbeitet die Anfrage, die Super-Administration wird
+    // nur mitinformiert. Ihre Adresse steht deshalb im verdeckten Feld: im Kopf
+    // einer Mail an die Ringverwaltung wäre sie sonst für alle lesbar.
+    const ringAdmins  = admins.rows.filter(a => a.role === 'ring_admin').map(a => a.email);
+    const superAdmins = admins.rows.filter(a => a.role === 'super_admin').map(a => a.email);
 
     // Echtzeit-Hinweis in der App
     toAdminsOfRing(user.ring_id, 'passwordResetRequested', {
@@ -219,8 +224,11 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
 
     // Zusätzlich per E-Mail, sofern SMTP eingerichtet ist
     if (admins.rows.length > 0) {
+      // Gibt es im Ring keine Verwaltung, übernimmt die Super-Administration –
+      // dann ist sie selbst die Empfängerin und steht sichtbar im Kopf.
       await sendMail({
-        to: admins.rows.map(a => a.email),
+        to:  ringAdmins.length > 0 ? ringAdmins : superAdmins,
+        bcc: ringAdmins.length > 0 ? superAdmins : undefined,
         subject: `BHD-Regionalplan: Passwortanfrage von ${user.name || user.email}`,
         text:
           `${user.name || user.email} (${user.ring_name}) hat ein neues Passwort angefordert.\n\n` +
