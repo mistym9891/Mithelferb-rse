@@ -1,0 +1,46 @@
+# Auslieferung für den öffentlichen Kundentest von diesem Rechner aus.
+#
+# Unterschied zum Caddyfile des Produktivbetriebs: hier kein TLS und kein
+# Domainname. Die Verschlüsselung übernimmt der Tailscale-Funnel davor, dieser
+# Dienst spricht dahinter nur einfaches HTTP auf Port 80. Sonst sind die Regeln
+# dieselben – gleiche Weiterleitungen, gleiche Kopfzeilen.
+
+:80 {
+	encode zstd gzip
+
+	# API, Anmeldung und Echtzeit-Verbindung an das Backend weiterreichen.
+	handle /api/* {
+		reverse_proxy backend:5000
+	}
+	handle /auth/* {
+		reverse_proxy backend:5000
+	}
+	handle /socket.io/* {
+		reverse_proxy backend:5000
+	}
+
+	# Alles andere ist die gebaute Single-Page-App.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		# Interne App – nicht in Suchmaschinen aufnehmen.
+		X-Robots-Tag "noindex, nofollow"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	# Der Service Worker darf nie aus dem Cache kommen, sonst bleiben
+	# Aktualisierungen der App bei den Benutzern hängen.
+	@sw path /sw.js
+	header @sw Cache-Control "no-cache, no-store, must-revalidate"
+
+	# Strict-Transport-Security fehlt hier bewusst: der Funnel liefert HTTPS
+	# aus, dieser Dienst selbst ist nur über das Docker-Netz erreichbar.
+}

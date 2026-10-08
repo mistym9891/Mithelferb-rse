@@ -1,0 +1,77 @@
+# Öffentlicher Kundentest von diesem Rechner aus.
+#
+#   docker compose -f docker-compose.test.yml up -d --build
+#
+# Warum überhaupt Container für einen Test?
+# Backend und Vorschau liefen bisher als Vordergrundprozesse in einer
+# Arbeitssitzung. Endet die Sitzung, enden die Prozesse – der öffentliche Link
+# zeigte danach auf einen Port, auf dem nichts mehr lauschte. Genau das ist dem
+# Kunden passiert. Mit "restart: unless-stopped" starten beide Dienste nach
+# einem Neustart des Rechners und nach einem Absturz von allein wieder.
+#
+# Die Datenbank bleibt der bereits eingerichtete Container aus
+# docker-compose.yml (maschinenringe_db) mit allen Ringen, Grenzen, Teilorten
+# und Konten. Sie wird hier absichtlich nicht neu angelegt.
+#
+# Für den Dauerbetrieb ist weiterhin docker-compose.prod.yml auf dem
+# Hetzner-Server vorgesehen; dort hängt nichts an diesem Rechner.
+
+services:
+  backend:
+    build: ./backend
+    container_name: mr_test_backend
+    restart: unless-stopped
+    # Nimmt JWT_SECRET, die VAPID-Schlüssel und etwaige SMTP-Daten aus der
+    # vorhandenen Datei; die Datenbankangaben darunter haben Vorrang.
+    env_file: ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TZ: Europe/Berlin
+      # Im Docker-Netz heißt die Datenbank bei ihrem Containernamen und
+      # lauscht dort auf 5432 – der Umweg über Port 5433 des Rechners entfällt.
+      DB_HOST: maschinenringe_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: maschinenringe
+      # Adresse in Benachrichtigungen und Passwort-Links.
+      APP_URL: ${APP_URL:-https://mas.tailb21197.ts.net:8443}
+      FRONTEND_URL: ${APP_URL:-https://mas.tailb21197.ts.net:8443}
+    networks:
+      default:
+        aliases: [backend]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:5000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: mr_test_web
+    restart: unless-stopped
+    # Dasselbe Abbild wie im Produktivbetrieb, nur ohne TLS: die
+    # Verschlüsselung macht der Funnel davor.
+    volumes:
+      - ./frontend/Caddyfile.test:/etc/caddy/Caddyfile:ro
+    ports:
+      # Der Funnel leitet https://…:8443 auf 127.0.0.1:4173 weiter.
+      - "127.0.0.1:4173:80"
+    depends_on:
+      - backend
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+# Das Netz des bereits laufenden Datenbank-Containers mitbenutzen.
+networks:
+  default:
+    name: maschienenringeapp_default
+    external: true

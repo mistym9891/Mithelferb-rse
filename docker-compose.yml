@@ -2,6 +2,9 @@ services:
   db:
     image: postgis/postgis:16-3.4
     container_name: maschinenringe_db
+    # Ohne diese Regel bleibt die Datenbank nach einem Neustart des Rechners
+    # aus: die App läuft dann, kann aber keine Daten laden.
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
