@@ -1,5 +1,5 @@
 /*
- * Service Worker der Mitarbeiterbörse.
+ * Service Worker des BHD-Regionalplans.
  *
  * Ziel ist nicht Offline-Betrieb der Daten – freie Mitarbeiter müssen immer
  * aktuell sein –, sondern eine installierbare App-Hülle, die auch bei
@@ -10,7 +10,7 @@
  *  - /api und /auth: NIE cachen, immer Netzwerk
  */
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL_CACHE = `shell-${VERSION}`;
 const TILE_CACHE = `tiles-${VERSION}`;
 const MAX_TILES = 300;
@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Kartenkacheln: erst Cache, sonst Netz (und dann ablegen).
-  if (/tile\.openstreetmap\.org|basemaps\.cartocdn\.com/.test(url.hostname)) {
+  if (/sgx\.geodatenzentrum\.de/.test(url.hostname)) {
     event.respondWith((async () => {
       const cache = await caches.open(TILE_CACHE);
       const hit = await cache.match(request);

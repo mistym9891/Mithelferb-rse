@@ -231,13 +231,29 @@ const MapView: React.FC<MapViewProps> = ({
       keyboard                   /* +/- und Pfeiltasten */
     >
       <Recenter center={center} zoom={zoom} />
-      {/* Im Dunkelmodus werden dieselben OSM-Kacheln abgedunkelt. Das geschieht
-          bewusst per CSS-Regel auf `.dark .leaflet-tile-pane` und NICHT über die
-          className-Prop: Leaflet wertet className nur beim Anlegen der Ebene aus,
-          ein Themenwechsel hätte sonst erst nach einem Neuladen gewirkt. */}
+      {/* Kartenhintergrund: basemap.de Web Raster des Bundesamtes für
+          Kartographie und Geodäsie (BKG) – dieselbe Stelle, von der auch die
+          amtlichen Gemeindegrenzen (VG250) dieser App stammen.
+
+          Zuvor lagen hier die Kacheln von tile.openstreetmap.org. Das sind
+          ehrenamtlich betriebene Server, deren Nutzungsbedingungen den Einsatz
+          als Hintergrund einer Anwendung ausdrücklich nicht vorsehen. Sie haben
+          die Zugriffe des Kunden mit „Access blocked" beantwortet – auf dem
+          Rechner sichtbar, auf dem Handy zunächst nicht, weil dort noch
+          zwischengespeicherte Kacheln lagen. basemap.de ist für genau diesen
+          Zweck gedacht, braucht keinen Schlüssel und steht unter dl-de/by-2-0.
+
+          Im Dunkelmodus wird die graue Fassung geladen und zusätzlich per
+          CSS-Regel auf `.dark .leaflet-tile-pane` abgedunkelt. Der Wechsel der
+          URL erzeugt über `key` bewusst eine neue Ebene; die CSS-Regel greift
+          davon unabhängig sofort, weil Leaflet die className-Prop nur beim
+          Anlegen einer Ebene auswertet. */}
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        key={dark ? 'bm-grau' : 'bm-farbe'}
+        url={`https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/${
+          dark ? 'de_basemapde_web_raster_grau' : 'de_basemapde_web_raster_farbe'
+        }/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png`}
+        attribution='&copy; <a href="https://basemap.de/">basemap.de / BKG</a> (<a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>)'
         maxZoom={19}
       />
 

@@ -269,6 +269,25 @@ markierten Stellen (Verantwortlicher, Datenschutzbeauftragte/r, Vereinbarung
 nach Art. 26 DSGVO, Speicherfristen) müssen vor dem Produktivgang ergänzt und
 freigegeben werden.
 
+## Kartenhintergrund
+
+Die Karte liegt auf **basemap.de Web Raster** des Bundesamts für Kartographie
+und Geodäsie – im hellen Modus die farbige, im dunklen die graue Fassung.
+
+* Quelle: <https://basemap.de/>
+* Lizenz: `dl-de/by-2-0`, © basemap.de / BKG – kein Schlüssel, keine Anmeldung
+
+Vorher lagen hier die Kacheln von `tile.openstreetmap.org`. Deren
+Nutzungsbedingungen sehen den Einsatz als Hintergrund einer Anwendung nicht vor;
+die ehrenamtlich betriebenen Server haben die Zugriffe mit *„Access blocked"*
+beantwortet. Auf dem Handy fiel das zunächst nicht auf, weil dort noch
+zwischengespeicherte Kacheln lagen, auf dem Rechner sofort. basemap.de ist für
+diesen Zweck gedacht und stammt von derselben Stelle wie die Grenzdaten unten.
+
+Für das Geocoding der Geschäftsstellen wird weiterhin OpenStreetMap Nominatim
+verwendet – das läuft einmalig beim Einrichten, nicht bei jedem Seitenaufruf,
+und hält das Limit von einer Anfrage je Sekunde ein.
+
 ## Ringgrenzen aus amtlichen Gemeindegrenzen
 
 Grundlage ist **VG250** des Bundesamts für Kartographie und Geodäsie
