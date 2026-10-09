@@ -1,2 +1,25 @@
 node_modules
 dist
+
+# .env gehört NICHT in das Abbild.
+#
+# Zwei Gründe:
+# 1. Das Abbild enthielt sonst JWT_SECRET und den privaten VAPID-Schlüssel.
+#    Wer das Abbild hat, hat damit die Möglichkeit, gültige Anmelde-Token zu
+#    erzeugen – ohne ein einziges Passwort zu kennen.
+# 2. Die Werte werden beim Bauen eingefroren. Eine Änderung an .env wirkte
+#    dann erst beim nächsten Bauen, und dotenv zog die alte Datei aus dem
+#    Abbild denen aus der Umgebung vor, sobald eine Variable dort fehlte.
+#    Genau daran war der Link zum Neusetzen eines Passworts auf eine alte
+#    Adresse festgenagelt.
+#
+# Die Konfiguration kommt zur Laufzeit aus der Umgebung (env_file bzw.
+# environment in docker-compose).
+.env
+.env.*
+!.env.example
+
+# Zwischenspeicher der Geokodierung und die BKG-Rohdaten (64 MB) werden zur
+# Laufzeit eingebunden, nicht mitgebaut.
+data/vg250
+data/geocode-cache.json

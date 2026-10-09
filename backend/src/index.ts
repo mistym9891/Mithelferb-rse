@@ -22,7 +22,25 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigin = process.env.FRONTEND_URL || '*';
+// Hinter einem Reverse Proxy (Caddy, Tunnel): die echte Adresse und das echte
+// Protokoll stehen in den X-Forwarded-Kopfzeilen. Ohne diese Zeile baut die App
+// Links mit "http" und dem internen Hostnamen – etwa den Link, mit dem die
+// Verwaltung ein Passwort neu erzeugt.
+app.set('trust proxy', true);
+
+/**
+ * Erlaubte Herkunft der Anfragen.
+ *
+ * FRONTEND_URL darf mehrere Adressen durch Komma getrennt enthalten. Das ist
+ * nicht Spielerei: die App ist zeitweise über zwei Wege erreichbar (Funnel auf
+ * Port 8443 und ein Tunnel auf dem Standardport 443, weil manche Netze nur 443
+ * durchlassen). Bei einer einzigen festen Adresse weist der Server die
+ * Echtzeit-Verbindung des jeweils anderen Weges ab – die Oberfläche lädt dann,
+ * aktualisiert sich aber nie, und zwar ohne sichtbaren Fehler.
+ */
+const allowedOrigin: string | string[] = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
+  : '*';
 const io = new Server(server, {
   cors: { origin: allowedOrigin, methods: ['GET', 'POST'], credentials: true },
   // Verbindung zügig als tot erkennen, damit der Client neu verbindet und

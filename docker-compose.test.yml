@@ -35,9 +35,14 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: maschinenringe
-      # Adresse in Benachrichtigungen und Passwort-Links.
-      APP_URL: ${APP_URL:-https://mas.tailb21197.ts.net:8443}
-      FRONTEND_URL: ${APP_URL:-https://mas.tailb21197.ts.net:8443}
+      # APP_URL bleibt absichtlich leer: die App nimmt dann die Adresse, ueber
+      # die die Anfrage tatsaechlich kam. So stimmt der Link zum Neusetzen
+      # eines Passworts bei beiden Wegen - und auch dann noch, wenn der
+      # Schnelltunnel beim Neustart einen neuen Namen bekommt.
+      #
+      # FRONTEND_URL listet beide Wege: sonst weist der Server die
+      # Echtzeit-Verbindung des jeweils anderen Weges ab.
+      FRONTEND_URL: ${FRONTEND_URL:-https://mas.tailb21197.ts.net:8443,https://testing-uncertainty-knights-powell.trycloudflare.com}
     networks:
       default:
         aliases: [backend]
@@ -66,6 +71,31 @@ services:
       - "127.0.0.1:4173:80"
     depends_on:
       - backend
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # Zweiter Weg von aussen - auf dem Standardport 443.
+  #
+  # Der Tailscale-Funnel liefert die App auf Port 8443 aus. Das ist
+  # oeffentlich erreichbar, aber viele Firmennetze lassen nach aussen nur 80
+  # und 443 zu; ausserdem filtern manche Netze die Domain ts.net weg. Genau
+  # das trifft den Kunden. Dieser Tunnel gibt eine Adresse auf 443 unter
+  # trycloudflare.com - ohne Tailscale, ohne Konto, aus jedem Netz erreichbar.
+  #
+  # Einschraenkung, die man kennen muss: eine solche Schnelladresse wird beim
+  # Start neu vergeben. Startet der Container neu, aendert sich der Name. Den
+  # aktuellen Namen zeigt:
+  #   docker compose -f docker-compose.test.yml logs tunnel | grep trycloudflare
+  # Dauerhaft gleichbleibend wird die Adresse erst auf dem Hetzner-Server mit
+  # eigener Domain.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: mr_test_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://web:80
+    depends_on:
+      - web
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }

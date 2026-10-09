@@ -10,13 +10,31 @@
 
 	# API, Anmeldung und Echtzeit-Verbindung an das Backend weiterreichen.
 	handle /api/* {
-		reverse_proxy backend:5000
+		reverse_proxy backend:5000 {
+			# Nach aussen ist die App immer HTTPS (der Funnel bzw. der
+			# Tunnel beendet die Verschlüsselung). Hierher kommt die
+			# Anfrage als einfaches HTTP - ohne diese Zeile baut das
+			# Backend Links mit "http://", die im Browser scheitern.
+			header_up X-Forwarded-Proto https
+		}
 	}
 	handle /auth/* {
-		reverse_proxy backend:5000
+		reverse_proxy backend:5000 {
+			# Nach aussen ist die App immer HTTPS (der Funnel bzw. der
+			# Tunnel beendet die Verschlüsselung). Hierher kommt die
+			# Anfrage als einfaches HTTP - ohne diese Zeile baut das
+			# Backend Links mit "http://", die im Browser scheitern.
+			header_up X-Forwarded-Proto https
+		}
 	}
 	handle /socket.io/* {
-		reverse_proxy backend:5000
+		reverse_proxy backend:5000 {
+			# Nach aussen ist die App immer HTTPS (der Funnel bzw. der
+			# Tunnel beendet die Verschlüsselung). Hierher kommt die
+			# Anfrage als einfaches HTTP - ohne diese Zeile baut das
+			# Backend Links mit "http://", die im Browser scheitern.
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	# Alles andere ist die gebaute Single-Page-App.
