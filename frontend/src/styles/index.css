@@ -111,6 +111,52 @@
 .dark .leaflet-tooltip-left::before  { border-left-color: #1f2937; }
 .dark .leaflet-tooltip-right::before { border-right-color: #1f2937; }
 
+/* Quellenvermerk der Karte: standardmäßig nur ein kleines ⓘ in der Ecke, der
+   Text erscheint erst auf Klick. Die Lizenz dl-de/by-2-0 verlangt den Vermerk,
+   schreibt aber keinen Ort vor – so verdeckt er das Kartenbild nicht. */
+.quellenhinweis {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.quellenhinweis button {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.85);
+  color: #374151;
+  font: italic 600 13px/1 Georgia, serif;
+  cursor: pointer;
+}
+.quellenhinweis button:hover { background: #ffffff; }
+.quellenhinweis-text {
+  max-width: 17rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #374151;
+  font-size: 10px;
+  line-height: 1.45;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.quellenhinweis-text a { color: #1d4ed8; text-decoration: underline; }
+
+.dark .quellenhinweis button {
+  background: rgba(31, 41, 55, 0.9);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #e5e7eb;
+}
+.dark .quellenhinweis button:hover { background: #1f2937; }
+.dark .quellenhinweis-text {
+  background: rgba(31, 41, 55, 0.94);
+  color: #e5e7eb;
+}
+.dark .quellenhinweis-text a { color: #93c5fd; }
+
 /* Dunkelmodus-Karte: im Dunkeln lädt die Karte die graue Fassung von
    basemap.de; diese Regel kehrt sie um, aus Hellgrau wird Dunkelgrau.
    Da die graue Fassung ohnehin kaum Farbe enthält, genügen Umkehrung und eine

@@ -63,6 +63,46 @@ function officeIcon(shortCode?: string | null): L.DivIcon {
  */
 const MIN_TOWN_ZOOM = 11;
 
+/**
+ * Quellenvermerk hinter einer ⓘ-Schaltfläche.
+ *
+ * Die Karte stammt von basemap.de (BKG) und steht unter der Datenlizenz
+ * Deutschland – Namensnennung 2.0. Diese Lizenz verlangt den Quellenvermerk
+ * ausdrücklich; er darf also nicht entfallen. Sie schreibt aber **nicht** vor,
+ * wo er stehen muss. Statt einer dauerhaften Leiste über dem Kartenbild liegt
+ * er deshalb hinter einem kleinen ⓘ in der Ecke – ein Klick genügt, und die
+ * Karte bleibt frei.
+ */
+const Quellenhinweis: React.FC = () => {
+  const [offen, setOffen] = useState(false);
+  return (
+    <div className="leaflet-bottom leaflet-right">
+      <div className="leaflet-control leaflet-bar quellenhinweis">
+        {offen && (
+          <div className="quellenhinweis-text">
+            Kartengrundlage:{' '}
+            <a href="https://basemap.de/" target="_blank" rel="noreferrer">basemap.de / BKG</a>{' '}
+            (<a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noreferrer">dl-de/by-2-0</a>)
+            <br />
+            Ringgrenzen aus VG250, © GeoBasis-DE / BKG – bearbeitet
+            <br />
+            Karte: <a href="https://leafletjs.com" target="_blank" rel="noreferrer">Leaflet</a>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setOffen(o => !o)}
+          title={offen ? 'Quellenangaben ausblenden' : 'Quellenangaben anzeigen'}
+          aria-expanded={offen}
+          aria-label="Quellenangaben"
+        >
+          i
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const TownLayer: React.FC<{
   towns: RingTown[];
   visibleRingIds: Set<number>;
@@ -229,6 +269,10 @@ const MapView: React.FC<MapViewProps> = ({
       touchZoom                  /* Zwei-Finger-Geste auf Handy/Tablet */
       boxZoom
       keyboard                   /* +/- und Pfeiltasten */
+      /* Die dauerhaft eingeblendete Quellenleiste ist abgeschaltet; der
+         Quellenvermerk steht stattdessen hinter der ⓘ-Schaltfläche unten
+         rechts (siehe <Quellenhinweis />). */
+      attributionControl={false}
     >
       <Recenter center={center} zoom={zoom} />
       {/* Kartenhintergrund: basemap.de Web Raster des Bundesamtes für
@@ -322,6 +366,8 @@ const MapView: React.FC<MapViewProps> = ({
           </Popup>
         </Marker>
       ))}
+
+      <Quellenhinweis />
     </MapContainer>
   );
 };
