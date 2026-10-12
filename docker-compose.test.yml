@@ -40,9 +40,17 @@ services:
       # eines Passworts bei beiden Wegen - und auch dann noch, wenn der
       # Schnelltunnel beim Neustart einen neuen Namen bekommt.
       #
-      # FRONTEND_URL listet beide Wege: sonst weist der Server die
-      # Echtzeit-Verbindung des jeweils anderen Weges ab.
-      FRONTEND_URL: ${FRONTEND_URL:-https://mas.tailb21197.ts.net:8443,https://testing-uncertainty-knights-powell.trycloudflare.com}
+      # FRONTEND_URL bleibt im Test ebenfalls leer. Eine feste Liste von
+      # Adressen musste nach jedem Neustart des Schnelltunnels nachgezogen
+      # werden - sonst wies der Server die Echtzeit-Verbindung ab, und zwar
+      # ohne sichtbaren Fehler: die Oberflaeche lud, aktualisierte sich aber
+      # nie wieder. Die Herkunftspruefung ist hier auch nicht die Absicherung:
+      # die App wird ueber denselben Ursprung ausgeliefert wie ihre
+      # Schnittstelle, und jede Verbindung - auch die Echtzeit-Verbindung -
+      # weist sich mit einem JWT aus.
+      #
+      # Auf dem Produktivserver wird FRONTEND_URL auf die eine echte Domain
+      # gesetzt (siehe docker-compose.prod.yml).
     networks:
       default:
         aliases: [backend]
