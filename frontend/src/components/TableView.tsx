@@ -8,6 +8,7 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import { AvailableStaff } from '../types';
+import { einsatzKnapp } from '../einsatz';
 import RingLink from './RingLink';
 
 const columnHelper = createColumnHelper<AvailableStaff>();
@@ -34,21 +35,24 @@ const StatusBadge: React.FC<{ s: AvailableStaff }> = ({ s }) => {
   );
 };
 
-const TypeBadge: React.FC<{ s: AvailableStaff }> = ({ s }) => {
-  const agri = s.type === 'agricultural';
-  return (
-    <span className={`px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap ${
-      agri
-        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'
-        : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200'
-    }`}>
-      {agri ? 'landw.' : 'städt.'}
-    </span>
-  );
+const BADGE: Record<string, string> = {
+  agricultural: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+  urban:        'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+  both:         'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200',
 };
 
+const TypeBadge: React.FC<{ s: AvailableStaff }> = ({ s }) => (
+  <span className={`px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap ${
+    BADGE[s.type] ?? BADGE.agricultural
+  }`}>
+    {einsatzKnapp(s.type)}
+  </span>
+);
+
 const abbrevColor = (s: AvailableStaff) =>
-  s.type === 'agricultural' ? 'text-blue-700 dark:text-blue-400' : 'text-red-600 dark:text-red-400';
+  s.type === 'agricultural' ? 'text-blue-700 dark:text-blue-400'
+  : s.type === 'both'       ? 'text-purple-700 dark:text-purple-400'
+  :                           'text-red-600 dark:text-red-400';
 
 interface TableViewProps {
   data: AvailableStaff[];
@@ -76,10 +80,6 @@ const TableView: React.FC<TableViewProps> = ({ data }) => {
       columnHelper.accessor('is_current', {
         header: 'Status',
         cell: i => <StatusBadge s={i.row.original} />,
-      }),
-      columnHelper.accessor('ring_name', {
-        header: 'Maschinenring',
-        cell: i => <RingLink name={i.getValue()} website={i.row.original.ring_website} />,
       }),
       columnHelper.accessor('abbreviation', {
         header: 'Kürzel',
@@ -115,6 +115,12 @@ const TableView: React.FC<TableViewProps> = ({ data }) => {
           const v = i.getValue();
           return v ? <a className="text-blue-600 dark:text-blue-400 underline" href={`mailto:${v}`}>{v}</a> : '—';
         },
+      }),
+      // Der Maschinenring steht bewusst ganz hinten: beim taeglichen Suchen
+      // zaehlen zuerst Verfuegbarkeit und Person, der Ring erst danach.
+      columnHelper.accessor('ring_name', {
+        header: 'Maschinenring',
+        cell: i => <RingLink name={i.getValue()} website={i.row.original.ring_website} />,
       }),
     ],
     []

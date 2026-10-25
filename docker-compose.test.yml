@@ -101,7 +101,13 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: mr_test_tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate --url http://web:80
+    # --protocol http2 statt des voreingestellten QUIC: ueber QUIC (UDP)
+    # riss die Verbindung hier im Zehn-Minuten-Takt ab
+    # ("timeout: no recent network activity"), und nach laengeren
+    # Ausfaellen meldete sich cloudflared mit einer neuen Adresse an -
+    # viermal in elf Tagen. http2 laeuft ueber TCP und uebersteht
+    # wackelige Verbindungen deutlich besser.
+    command: tunnel --no-autoupdate --protocol http2 --url http://web:80
     depends_on:
       - web
     logging:

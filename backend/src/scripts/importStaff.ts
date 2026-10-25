@@ -22,11 +22,19 @@ function townCoords(town: string): Coords | null {
   return null;
 }
 
-/** "landw." / "städt." / "landw./städt." -> the app's two categories. */
-function normaliseType(raw: string): 'agricultural' | 'urban' {
+/**
+ * "landw." / "staedt." / "landw./staedt." -> Einsatzart der App.
+ *
+ * Eintraege, die beides nennen, wurden frueher zu 'agricultural'
+ * zusammengezogen - die staedtische Qualifikation ging dabei verloren. Seit es
+ * die Art 'both' gibt, bleiben beide erhalten.
+ */
+function normaliseType(raw: string): 'agricultural' | 'urban' | 'both' {
   const v = (raw || '').toLowerCase();
-  // Mixed entries are treated as agricultural (the broader qualification).
-  if (v.includes('landw')) return 'agricultural';
+  const landw = v.includes('landw');
+  const staedt = v.includes('stadt') || v.includes('staedt') || v.includes('städt');
+  if (landw && staedt) return 'both';
+  if (landw) return 'agricultural';
   return 'urban';
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { AvailableStaff, RingInfo, RingTown } from '../types';
+import { einsatzKurz, einsatzLang } from '../einsatz';
 import { useTheme } from '../hooks/useTheme';
 import RingLink from './RingLink';
 
@@ -21,7 +22,7 @@ function staffIcon(s: AvailableStaff, stackIndex = 0, stackSize = 1): L.DivIcon 
     s.gender === 'female' ? 'staff-marker-female'
     : s.gender === 'male' ? 'staff-marker-male'
     : 'staff-marker-unknown';
-  const kind = s.type === 'agricultural' ? 'L' : 'S';
+  const kind = einsatzKurz(s.type);
   const label = `${s.abbreviation}, ${s.hours_per_day}, ${kind}`;
   const width = 18 + label.length * 7.2;
   const rowHeight = 26;
@@ -189,6 +190,34 @@ const Recenter: React.FC<{ center: [number, number]; zoom: number }> = ({ center
 
 const fmt = (d: string) => new Date(d).toLocaleDateString('de-DE');
 
+/**
+ * Angaben zur Geschäftsstelle – für Hover-Tooltip und Klick-Popup.
+ *
+ * Telefonnummer und Ansprechpartner stehen bewusst hier und nicht nur in der
+ * Tabelle: wer auf der Karte einen Ring sucht, will direkt anrufen können.
+ * Beide Felder pflegt die Ringverwaltung; fehlen sie, entfällt die Zeile.
+ */
+const OfficeDetails: React.FC<{ o: RingInfo; plain?: boolean }> = ({ o, plain }) => (
+  <div className="text-sm text-gray-900 dark:text-gray-100 min-w-[12rem]">
+    <div className="font-bold">
+      <RingLink name={o.name} website={o.website} plain={plain} />
+    </div>
+    <div>Geschäftsstelle{o.short_code ? ` (MR ${o.short_code})` : ''}</div>
+    {o.office_street && <div>{o.office_street}</div>}
+    {o.office_town && <div>{o.office_town}</div>}
+    {o.office_contact && <div className="mt-1">Ansprechpartner: {o.office_contact}</div>}
+    {o.office_phone && (
+      <div>
+        Tel.:{' '}
+        {plain
+          ? o.office_phone
+          : <a className="text-blue-600 dark:text-blue-400 underline"
+               href={`tel:${o.office_phone.replace(/\s/g, '')}`}>{o.office_phone}</a>}
+      </div>
+    )}
+  </div>
+);
+
 /** Detailanzeige eines freien Mitarbeiters – für Hover-Tooltip und Klick-Popup. */
 const StaffDetails: React.FC<{ s: AvailableStaff; plain?: boolean }> = ({ s, plain }) => (
   <div className="text-sm text-gray-900 dark:text-gray-100 min-w-[13rem]">
@@ -198,7 +227,7 @@ const StaffDetails: React.FC<{ s: AvailableStaff; plain?: boolean }> = ({ s, pla
     </div>
     <div>{s.town}</div>
     <div>
-      {s.type === 'agricultural' ? 'landwirtschaftlich' : 'städtisch'} · {s.hours_per_day} Std./Tag
+      {einsatzLang(s.type)} · {s.hours_per_day} Std./Tag
       {s.gender !== 'unknown' && (s.gender === 'female' ? ' · weiblich' : ' · männlich')}
     </div>
     <div className="mt-1"><RingLink name={s.ring_name} website={s.ring_website} plain={plain} /></div>
@@ -306,12 +335,23 @@ const MapView: React.FC<MapViewProps> = ({
           key={`${feature.properties?.name}-${i}`}
           data={feature}
           style={() => {
-            const color = featureColor(feature.properties?.name);
-            return { color, weight: dark ? 2 : 2.5, fillColor: color, fillOpacity: dark ? 0.14 : 0.08 };
+            // Die Grenzlinie ist für alle Ringe gleich schwarz; unterschieden
+            // werden die Gebiete über die Füllfarbe. Vorher hatte auch die
+            // Linie die Ringfarbe, wodurch benachbarte Gebiete ineinander
+            // übergingen. Im Dunkelmodus ein sehr helles Grau statt reinem
+            // Weiß – reines Schwarz wäre dort auf dunklem Grund unsichtbar.
+            const grenze = dark ? '#e5e7eb' : '#000000';
+            return {
+              color: grenze,
+              weight: dark ? 1.4 : 1.6,
+              fillColor: featureColor(feature.properties?.name),
+              fillOpacity: dark ? 0.14 : 0.08,
+            };
           }}
-          onEachFeature={(f, layer) => {
-            layer.bindTooltip(f.properties?.name ?? 'Ring', { sticky: true });
-          }}
+          /* Bewusst kein Tooltip auf der Fläche: der Ringname erschien sonst,
+             sobald der Zeiger irgendwo über dem Gebiet stand, und verdeckte
+             dabei die Mitarbeiter. Die Angaben zum Ring stehen jetzt
+             ausschließlich am Geschäftsstellen-Zeichen (MR …). */
         />
       ))}
 
@@ -323,13 +363,14 @@ const MapView: React.FC<MapViewProps> = ({
             position={[o.office_lat!, o.office_lng!]}
             icon={officeIcon(o.short_code)}
           >
+            {/* Beim Ueberfahren erscheinen dieselben Angaben wie beim
+                Antippen. Auf der Flaeche selbst haengt bewusst nichts mehr -
+                der Ringname folgte sonst dem Zeiger ueber das ganze Gebiet. */}
+            <Tooltip direction="top" offset={[0, -10]} opacity={1} className="staff-tooltip">
+              <OfficeDetails o={o} plain />
+            </Tooltip>
             <Popup>
-              <strong><RingLink name={o.name} website={o.website} /></strong>
-              <br />
-              Geschäftsstelle{o.short_code ? ` (MR ${o.short_code})` : ''}:
-              <br />
-              {o.office_street && <>{o.office_street}<br /></>}
-              {o.office_town}
+              <OfficeDetails o={o} />
             </Popup>
           </Marker>
         ))}

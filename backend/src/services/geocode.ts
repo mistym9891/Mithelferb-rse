@@ -36,30 +36,68 @@ async function throttle() {
   lastRequest = Date.now();
 }
 
+/**
+ * Schreibweisen, unter denen ein Wohnort gesucht wird – in dieser Reihenfolge.
+ *
+ * Anlass: „Neudenau-Kressbach" – Hauptort und Teilort, wie es in einer Anschrift
+ * üblich ist – blieb ohne Treffer, obwohl Nominatim den Ort kennt. Ursache war
+ * der angehängte Zusatz „, Deutschland": die Suche nach
+ * „Neudenau-Kressbach, Deutschland" liefert nichts, die nach
+ * „Neudenau-Kressbach" dagegen den richtigen Punkt. Das Land wird deshalb über
+ * den Parameter `countrycodes` eingegrenzt statt über den Suchtext.
+ *
+ * Bleibt die vollständige Schreibweise erfolglos, wird der Name an Bindestrich,
+ * Schrägstrich oder Komma zerlegt. Zuerst wird „Teilort, Hauptort" versucht,
+ * dann der Teilort allein – der ist der genauere Punkt –, zuletzt der Hauptort.
+ * So landet die Person notfalls im richtigen Hauptort statt gar nicht auf der
+ * Karte.
+ */
+export function ortSchreibweisen(town: string): string[] {
+  const voll = town.trim().replace(/\s+/g, ' ');
+  const kandidaten = [voll];
+
+  const teile = voll.split(/\s*[-/,]\s*/).map(t => t.trim()).filter(Boolean);
+  if (teile.length >= 2) {
+    const haupt = teile[0];
+    const teil = teile[teile.length - 1];
+    kandidaten.push(`${teil}, ${haupt}`, teil, haupt);
+  }
+  return [...new Set(kandidaten)];
+}
+
+async function nominatim(q: string): Promise<Coords | null> {
+  await throttle();
+  const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+    params: { q, countrycodes: 'de', format: 'json', limit: 1 },
+    headers: { 'User-Agent': 'BHD-Regionalplan/1.0 (Maschinenringe, interne Nutzung)' },
+    timeout: 15000,
+  });
+  if (!response.data || response.data.length === 0) return null;
+  const { lat, lon } = response.data[0];
+  return { lat: parseFloat(lat), lng: parseFloat(lon) };
+}
+
 export async function geocodeTown(town: string): Promise<Coords | null> {
   if (!town) return null;
   const key = town.trim().toLowerCase();
   if (cache[key]) return cache[key];
 
-  await throttle();
-  try {
-    const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-      params: { q: `${town}, Deutschland`, format: 'json', limit: 1 },
-      headers: { 'User-Agent': 'Maschinenringe-App/1.0 (internal use)' },
-      timeout: 15000,
-    });
-    if (response.data && response.data.length > 0) {
-      const { lat, lon } = response.data[0];
-      const coords = { lat: parseFloat(lat), lng: parseFloat(lon) };
-      cache[key] = coords;
-      saveCache(cache);
-      return coords;
+  for (const schreibweise of ortSchreibweisen(town)) {
+    try {
+      const coords = await nominatim(schreibweise);
+      if (coords) {
+        // Unter dem ursprünglich eingegebenen Namen ablegen: beim nächsten Mal
+        // ist derselbe Ort ohne weitere Anfrage da.
+        cache[key] = coords;
+        saveCache(cache);
+        return coords;
+      }
+    } catch (error: any) {
+      console.error(`Geocoding fehlgeschlagen für "${schreibweise}":`, error.message);
     }
-    return null;
-  } catch (error: any) {
-    console.error(`Geocoding failed for ${town}:`, error.message);
-    return null;
   }
+  console.warn(`Kein Treffer für Wohnort "${town}" – auch nicht zerlegt.`);
+  return null;
 }
 
 /** Pre-seed the in-process cache from an already generated locations.json. */

@@ -4,6 +4,8 @@ import pool from '../db';
 import { geocodeTown } from '../services/geocode';
 import { broadcast, audit } from '../services/notify';
 
+const EINSATZARTEN = ['agricultural', 'urban', 'both'];
+
 const router = Router();
 router.use(authenticate);
 
@@ -44,8 +46,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   if (!first_name || !last_name || !abbreviation || !town || !type) {
     return res.status(400).json({ error: 'first_name, last_name, abbreviation, town and type are required' });
   }
-  if (!['agricultural', 'urban'].includes(type)) {
-    return res.status(400).json({ error: "type must be 'agricultural' or 'urban'" });
+  // 'both' = landwirtschaftlich und staedtisch: wer beides uebernimmt, musste
+  // bisher zweimal angelegt werden.
+  if (!EINSATZARTEN.includes(type)) {
+    return res.status(400).json({
+      error: "type must be 'agricultural', 'urban' or 'both'",
+    });
   }
 
   try {
@@ -85,6 +91,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   const fields = Object.keys(updates).filter(k => EDITABLE.includes(k));
   if (fields.length === 0) {
     return res.status(400).json({ error: 'No updatable fields supplied' });
+  }
+  // Wie beim Anlegen pruefen: sonst meldet erst die Datenbank den Fehler, und
+  // der Aufrufer bekommt einen 500er statt einer verstaendlichen Antwort.
+  if (fields.includes('type') && !EINSATZARTEN.includes(updates.type)) {
+    return res.status(400).json({
+      error: "type must be 'agricultural', 'urban' or 'both'",
+    });
   }
 
   const values: any[] = fields.map(f => updates[f]);

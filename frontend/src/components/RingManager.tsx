@@ -18,7 +18,8 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
-  const [form, setForm] = useState({ name: '', officeTown: '', website: '' });
+  const leeresFormular = { name: '', officeTown: '', website: '', officePhone: '', officeContact: '' };
+  const [form, setForm] = useState(leeresFormular);
   const [editing, setEditing] = useState<AdminRing | null>(null);
 
   const load = async () => {
@@ -41,6 +42,7 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
       if (editing) {
         await updateAdminRing(editing.id, {
           name: form.name.trim(), officeTown: form.officeTown.trim(), website: form.website.trim(),
+          officePhone: form.officePhone.trim(), officeContact: form.officeContact.trim(),
         });
         toast.success('Ring aktualisiert');
       } else {
@@ -48,11 +50,15 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
           name: form.name.trim(),
           officeTown: form.officeTown.trim() || undefined,
           website: form.website.trim() || undefined,
+          // Leerer Text statt undefined: so laesst sich eine Angabe auch
+          // wieder entfernen, nicht nur aendern.
+          officePhone: form.officePhone.trim(),
+          officeContact: form.officeContact.trim(),
         });
         toast.success(`Ring „${res.data.name}“ angelegt`);
         if (res.data.hint) toast.warn(res.data.hint, { autoClose: 9000 });
       }
-      setForm({ name: '', officeTown: '', website: '' });
+      setForm(leeresFormular);
       setEditing(null);
       setShowForm(false);
       await load();
@@ -65,7 +71,8 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
   };
 
   const edit = (r: AdminRing) => {
-    setForm({ name: r.name, officeTown: r.office_town || '', website: r.website || '' });
+    setForm({ name: r.name, officeTown: r.office_town || '', website: r.website || '',
+              officePhone: r.office_phone || '', officeContact: r.office_contact || '' });
     setEditing(r);
     setShowForm(true);
   };
@@ -102,7 +109,7 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
           </p>
         </div>
         <button
-          onClick={() => { setEditing(null); setForm({ name: '', officeTown: '', website: '' }); setShowForm(v => !v); }}
+          onClick={() => { setEditing(null); setForm(leeresFormular); setShowForm(v => !v); }}
           className="bg-mr-green hover:bg-mr-dark text-white px-3 sm:px-4 h-10 rounded text-sm font-medium whitespace-nowrap"
         >
           {showForm ? 'Abbrechen' : '+ Ring'}
@@ -137,6 +144,21 @@ const RingManager: React.FC<{ onChanged?: () => void }> = ({ onChanged }) => {
               „https://“ wird bei Bedarf ergänzt.
             </span>
           </label>
+          <label className="block">
+            <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Telefon Geschäftsstelle</span>
+            <input className={input} value={form.officePhone} type="tel" inputMode="tel"
+                   placeholder="z. B. 07904 7700"
+                   onChange={e => setForm({ ...form, officePhone: e.target.value })} />
+          </label>
+          <label className="block">
+            <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Ansprechpartner</span>
+            <input className={input} value={form.officeContact}
+                   placeholder="z. B. Fritz Hube"
+                   onChange={e => setForm({ ...form, officeContact: e.target.value })} />
+          </label>
+          <span className="block text-xs text-gray-500 dark:text-gray-400 sm:col-span-2 -mt-2">
+            Beides erscheint auf der Karte, sobald man das Zeichen „MR …“ berührt oder anklickt.
+          </span>
           <div className="sm:col-span-2">
             <button type="submit" disabled={saving}
                     className="w-full sm:w-auto bg-mr-green hover:bg-mr-dark disabled:opacity-50 text-white px-5 h-11 rounded text-sm font-medium">

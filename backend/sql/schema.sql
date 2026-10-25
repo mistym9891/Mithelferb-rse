@@ -216,3 +216,25 @@ CREATE TABLE IF NOT EXISTS landesgrenze (
 );
 
 CREATE INDEX IF NOT EXISTS idx_landesgrenze_geom ON landesgrenze USING GIST (geom);
+
+-- ---------------------------------------------------------------------------
+-- Kontaktangaben der Geschäftsstelle
+--
+-- Beim Überfahren des Zeichens „MR …" auf der Karte sollen Telefonnummer und
+-- Ansprechpartner des Rings erscheinen, damit man nicht erst in der Tabelle
+-- nachschlagen muss. Beide Felder pflegt die Ringverwaltung selbst.
+-- ---------------------------------------------------------------------------
+ALTER TABLE rings ADD COLUMN IF NOT EXISTS office_phone   TEXT;
+ALTER TABLE rings ADD COLUMN IF NOT EXISTS office_contact TEXT;
+
+-- ---------------------------------------------------------------------------
+-- Einsatzart „landwirtschaftlich und städtisch"
+--
+-- Bisher ließ sich eine Kraft nur entweder dem einen oder dem anderen Bereich
+-- zuordnen. Wer beides übernimmt, musste doppelt angelegt werden. Die dritte
+-- Ausprägung 'both' ergänzt die bestehenden Werte; vorhandene Datensätze
+-- bleiben unberührt.
+-- ---------------------------------------------------------------------------
+ALTER TABLE staff DROP CONSTRAINT IF EXISTS staff_type_check;
+ALTER TABLE staff ADD  CONSTRAINT staff_type_check
+  CHECK (type IN ('agricultural', 'urban', 'both'));

@@ -28,6 +28,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       `WITH vereinfacht AS (
          SELECT r.id, r.name, r.short_code, r.office_street, r.office_town,
                 r.office_lat, r.office_lng, r.website,
+                r.office_phone, r.office_contact,
                 CASE WHEN $1::float8 > 0
                      THEN ST_SimplifyPreserveTopology(r.boundary, $1::float8)
                      ELSE r.boundary END AS geom,
@@ -36,7 +37,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
          LEFT JOIN landesgrenze l ON l.id = 1
        )
        SELECT id, name, short_code, office_street, office_town,
-              office_lat, office_lng, website,
+              office_lat, office_lng, website, office_phone, office_contact,
               ST_AsGeoJSON(
                 CASE
                   WHEN geom IS NULL THEN NULL
@@ -69,6 +70,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
           office_lat: row.office_lat,
           office_lng: row.office_lng,
           website: row.website,
+          office_phone: row.office_phone,
+          office_contact: row.office_contact,
         },
       }));
     res.json({ type: 'FeatureCollection', features });
@@ -83,7 +86,7 @@ router.get('/list', async (_req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT id, name, short_code, office_street, office_town,
-              office_lat, office_lng, website
+              office_lat, office_lng, website, office_phone, office_contact
        FROM rings ORDER BY name`
     );
     res.json(result.rows);

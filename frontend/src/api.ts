@@ -76,10 +76,12 @@ export const getNetworkInfo = () =>
 
 export const getAdminRings = () => api.get<AdminRing[]>('/api/admin/rings');
 
-export const createAdminRing = (data: { name: string; officeTown?: string; website?: string }) =>
+export const createAdminRing = (data: { name: string; officeTown?: string; website?: string;
+                                        officePhone?: string; officeContact?: string }) =>
   api.post<{ id: number; name: string; geocoded: boolean; hint?: string }>('/api/admin/rings', data);
 
-export const updateAdminRing = (id: number, data: { name?: string; officeTown?: string; website?: string }) =>
+export const updateAdminRing = (id: number, data: { name?: string; officeTown?: string; website?: string;
+                                                    officePhone?: string; officeContact?: string }) =>
   api.put(`/api/admin/rings/${id}`, data);
 
 export const deleteAdminRing = (id: number) => api.delete(`/api/admin/rings/${id}`);

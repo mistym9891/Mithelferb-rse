@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { Staff } from '../types';
+import { EINSATZARTEN, einsatzKnapp } from '../einsatz';
 import {
   getMyStaff, createStaff, updateStaff, deleteStaff,
   setAvailability, removeAvailability,
@@ -137,8 +138,11 @@ const StaffManager: React.FC = () => {
     </label>
   );
 
+  // Blau = landwirtschaftlich, Rot = staedtisch, Violett = beides.
   const abbrevColor = (s: Staff) =>
-    s.type === 'agricultural' ? 'text-blue-700 dark:text-blue-400' : 'text-red-600 dark:text-red-400';
+    s.type === 'agricultural' ? 'text-blue-700 dark:text-blue-400'
+    : s.type === 'both'       ? 'text-purple-700 dark:text-purple-400'
+    :                           'text-red-600 dark:text-red-400';
 
   const statusNode = (s: Staff) => {
     if (!s.availability_id) return <span className="text-gray-400 dark:text-gray-500">im Einsatz</span>;
@@ -220,8 +224,9 @@ const StaffManager: React.FC = () => {
           ))}
           {field('Einsatzart *', (
             <select className={input} value={form.type ?? 'agricultural'} onChange={e => setForm({ ...form, type: e.target.value as Staff['type'] })}>
-              <option value="agricultural">landwirtschaftlich (L)</option>
-              <option value="urban">städtisch (S)</option>
+              {EINSATZARTEN.map(e => (
+                <option key={e.wert} value={e.wert}>{e.lang} ({e.kurz})</option>
+              ))}
             </select>
           ))}
           {field('Std./Tag', <input className={input} type="number" inputMode="decimal" step="0.5" min="0" max="24" value={form.hours_per_day ?? 8} onChange={e => setForm({ ...form, hours_per_day: parseFloat(e.target.value) })} />)}
@@ -251,7 +256,7 @@ const StaffManager: React.FC = () => {
                 <span className="ml-2">{s.first_name} {s.last_name}</span>
               </div>
               <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                {s.type === 'agricultural' ? 'landw.' : 'städt.'} · {s.hours_per_day} Std.
+                {einsatzKnapp(s.type)} · {s.hours_per_day} Std.
               </span>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{s.town}</div>
@@ -280,7 +285,7 @@ const StaffManager: React.FC = () => {
                   <td className={`${cell} font-bold ${abbrevColor(s)}`}>{s.abbreviation}</td>
                   <td className={`${cell} whitespace-nowrap`}>{s.first_name} {s.last_name}</td>
                   <td className={cell}>{s.town}</td>
-                  <td className={cell}>{s.type === 'agricultural' ? 'landw.' : 'städt.'}</td>
+                  <td className={cell}>{einsatzKnapp(s.type)}</td>
                   <td className={cell}>{s.hours_per_day}</td>
                   <td className={`${cell} w-36`}>
                     <input

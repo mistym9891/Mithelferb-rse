@@ -10,7 +10,7 @@
  *  - /api und /auth: NIE cachen, immer Netzwerk
  */
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const SHELL_CACHE = `shell-${VERSION}`;
 const TILE_CACHE = `tiles-${VERSION}`;
 const MAX_TILES = 300;

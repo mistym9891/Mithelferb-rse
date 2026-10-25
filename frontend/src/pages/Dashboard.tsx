@@ -11,6 +11,7 @@ import AdminPanel from '../components/AdminPanel';
 import RingFilter from '../components/RingFilter';
 import { makeRingColorMap } from '../ringColors';
 import { AvailableStaff, RingInfo, RingTown } from '../types';
+import { einsatzKnapp, passtZuFilter } from '../einsatz';
 
 // Fallback centre: roughly Hohenlohe / Schwäbisch Hall.
 const DEFAULT_CENTER: [number, number] = [49.2, 9.9];
@@ -80,7 +81,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!socket) return;
     const onNew = (data: any) => {
-      const kind = data.type === 'agricultural' ? 'landw.' : 'städt.';
+      const kind = einsatzKnapp(data.type);
       toast.info(
         `${data.abbreviation} (${shortRingName(data.ringName)}) ist frei: ` +
         `${new Date(data.start_date).toLocaleDateString('de-DE')} – ` +
@@ -136,7 +137,7 @@ const Dashboard: React.FC = () => {
   const filteredStaff = useMemo(
     () => staff.filter(s =>
       selectedRings.has(s.ring_id) &&
-      (!typeFilter || s.type === typeFilter) &&
+      passtZuFilter(s.type, typeFilter) &&
       (!whenFilter || (whenFilter === 'current' ? s.is_current : !s.is_current))
     ),
     [staff, selectedRings, typeFilter, whenFilter]
@@ -275,6 +276,9 @@ const Dashboard: React.FC = () => {
               <span className="font-medium">Art:</span>
               <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)} className={selectCls}>
                 <option value="">alle</option>
+                {/* „beides" ist bewusst keine eigene Filterstufe: wer beides
+                    uebernimmt, soll bei jeder der beiden Einschraenkungen
+                    erscheinen, sonst waere er praktisch unauffindbar. */}
                 <option value="agricultural">landwirtschaftlich</option>
                 <option value="urban">städtisch</option>
               </select>
@@ -303,7 +307,7 @@ const Dashboard: React.FC = () => {
               <span className="inline-flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded-full border-2 border-dashed" style={{ borderColor: '#b45309' }} /> erst künftig frei
               </span>
-              <span>L = landw. · S = städt.</span>
+              <span>L = landw. · S = städt. · LS = beides</span>
             </span>
           </div>
         </div>

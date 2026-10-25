@@ -4,6 +4,12 @@ import pool from '../db';
 import { broadcast, audit } from '../services/notify';
 import { sendToAll } from '../services/push';
 
+const EINSATZ_LANG: Record<string, string> = {
+  agricultural: 'landwirtschaftlich',
+  urban: 'städtisch',
+  both: 'landwirtschaftlich und städtisch',
+};
+
 const router = Router();
 router.use(authenticate);
 
@@ -63,7 +69,7 @@ router.post('/:staffId/availability', async (req: AuthRequest, res: Response) =>
     sendToAll({
       title: `${staff.abbreviation} ist frei (${ringName})`,
       body: `${von} – ${bis} · ${staff.hours_per_day} Std./Tag · ` +
-            `${staff.type === 'agricultural' ? 'landwirtschaftlich' : 'städtisch'} · ${staff.town}`,
+            `${EINSATZ_LANG[staff.type] ?? 'landwirtschaftlich'} · ${staff.town}`,
       tag: `avail-${staffId}`,
       url: '/dashboard',
     }, req.user!.userId).catch(err => console.error('Push-Versand:', err));

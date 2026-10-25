@@ -14,6 +14,13 @@ import { audit, broadcast } from '../services/notify';
  * Nur http(s) zulassen – so kann über das Eingabefeld kein "javascript:"-Link
  * in die Oberfläche gelangen.
  */
+/** Leerzeichen entfernen; aus einer leeren Eingabe wird null. */
+function trimmen(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const t = value.trim();
+  return t === '' ? null : t;
+}
+
 function normaliseWebsite(value: unknown): string | null {
   if (!value || typeof value !== 'string') return null;
   const raw = value.trim();
@@ -36,6 +43,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query(`
       SELECT r.id, r.name, r.office_town, r.office_lat, r.office_lng, r.website,
+             r.office_phone, r.office_contact,
              r.boundary_source,
              (r.boundary IS NOT NULL) AS has_boundary,
              (SELECT COUNT(*) FROM users u WHERE u.ring_id = r.id)  AS user_count,
@@ -53,7 +61,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
 
 // POST /api/admin/rings – neuen Ring anlegen
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { name, officeTown, website } = req.body;
+  const { name, officeTown, website, officePhone, officeContact } = req.body;
   if (!name || !String(name).trim()) {
     return res.status(400).json({ error: 'Name des Rings ist erforderlich' });
   }
@@ -62,10 +70,11 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     // dieses Rings sofort richtig zentriert.
     const coords = officeTown ? await geocodeTown(officeTown) : null;
     const result = await pool.query(
-      `INSERT INTO rings (name, office_town, office_lat, office_lng, website)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, name`,
+      `INSERT INTO rings (name, office_town, office_lat, office_lng, website,
+                          office_phone, office_contact)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name`,
       [String(name).trim(), officeTown || null, coords?.lat ?? null, coords?.lng ?? null,
-       normaliseWebsite(website)]
+       normaliseWebsite(website), trimmen(officePhone), trimmen(officeContact)]
     );
     await audit(req.user!.userId, 'ring.create', `ring:${result.rows[0].id}`, { name });
     broadcast('ringsChanged', { action: 'created' });
@@ -86,7 +95,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 // PUT /api/admin/rings/:id
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   const id = parseInt(req.params.id);
-  const { name, officeTown, website } = req.body;
+  const { name, officeTown, website, officePhone, officeContact } = req.body;
   try {
     const cur = await pool.query('SELECT office_town FROM rings WHERE id = $1', [id]);
     if (cur.rows.length === 0) return res.status(404).json({ error: 'Ring nicht gefunden' });
@@ -103,10 +112,18 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
          office_lat = COALESCE($4, office_lat),
          office_lng = COALESCE($5, office_lng),
          website = CASE WHEN $6::text IS NULL THEN website
-                        WHEN $6 = '' THEN NULL ELSE $6 END
-       WHERE id = $1 RETURNING id, name, office_town, website`,
+                        WHEN $6 = '' THEN NULL ELSE $6 END,
+         -- Ein leerer Text loescht den Eintrag, ein fehlendes Feld laesst ihn
+         -- unveraendert - sonst koennte eine Angabe nie wieder entfernt werden.
+         office_phone = CASE WHEN $7::text IS NULL THEN office_phone
+                             WHEN $7 = '' THEN NULL ELSE $7 END,
+         office_contact = CASE WHEN $8::text IS NULL THEN office_contact
+                               WHEN $8 = '' THEN NULL ELSE $8 END
+       WHERE id = $1 RETURNING id, name, office_town, website, office_phone, office_contact`,
       [id, name ?? null, officeTown ?? null, coords?.lat ?? null, coords?.lng ?? null,
-       website === undefined ? null : normaliseWebsite(website) ?? '']
+       website === undefined ? null : normaliseWebsite(website) ?? '',
+       officePhone === undefined ? null : (trimmen(officePhone) ?? ''),
+       officeContact === undefined ? null : (trimmen(officeContact) ?? '')]
     );
     await audit(req.user!.userId, 'ring.update', `ring:${id}`, { name, officeTown });
     broadcast('ringsChanged', { action: 'updated' });

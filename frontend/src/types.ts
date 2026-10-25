@@ -47,6 +47,13 @@ export interface AuditEntry {
   actor_email: string | null;
 }
 
+/**
+ * Einsatzart einer Kraft. 'both' kam hinzu, weil manche Kräfte sowohl
+ * landwirtschaftlich als auch städtisch eingesetzt werden – vorher mussten
+ * sie dafür zweimal angelegt werden.
+ */
+export type EinsatzArt = 'agricultural' | 'urban' | 'both';
+
 export interface Staff {
   id: number;
   first_name: string;
@@ -55,7 +62,8 @@ export interface Staff {
   town: string;
   lat?: number;
   lng?: number;
-  type: 'agricultural' | 'urban';
+  /** 'both' = landwirtschaftlich und städtisch. */
+  type: EinsatzArt;
   gender: 'male' | 'female' | 'unknown';
   hours_per_day: number;
   supervisor?: string;
@@ -73,7 +81,8 @@ export interface AvailableStaff {
   town: string;
   lat?: number;
   lng?: number;
-  type: 'agricultural' | 'urban';
+  /** 'both' = landwirtschaftlich und städtisch. */
+  type: EinsatzArt;
   gender: 'male' | 'female' | 'unknown';
   hours_per_day: number;
   ring_id: number;
@@ -100,6 +109,9 @@ export interface RingInfo {
   office_lat?: number;
   office_lng?: number;
   website?: string | null;
+  /** Telefon und Ansprechpartner der Geschäftsstelle (Anzeige am MR-Zeichen). */
+  office_phone?: string | null;
+  office_contact?: string | null;
 }
 
 /** Ort oder Teilort eines Rings – wird beim Hineinzoomen eingeblendet. */
@@ -122,6 +134,8 @@ export interface AdminRing {
   short_code: string | null;
   office_street: string | null;
   website: string | null;
+  office_phone: string | null;
+  office_contact: string | null;
   boundary_source: string | null;
   has_boundary: boolean;
   user_count: string;
