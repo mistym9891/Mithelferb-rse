@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin';
 import adminRingRoutes from './routes/adminRings';
 import pushRoutes from './routes/push';
 import { startCleanupCron } from './cron/cleanupAvailabilities';
+import { meldeStartkonfiguration } from './config/startupCheck';
 import { setIo } from './services/notify';
 
 dotenv.config();
@@ -135,6 +136,8 @@ startCleanupCron();
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
+  // Im Produktivbetrieb auf offene Punkte hinweisen (Rechtstexte, Schlüssel).
+  meldeStartkonfiguration();
 });
 
 async function shutdown(signal: string) {

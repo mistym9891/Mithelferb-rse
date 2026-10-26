@@ -45,6 +45,13 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       APP_URL: https://${APP_DOMAIN}
       FRONTEND_URL: https://${APP_DOMAIN}
+      # Push-Benachrichtigungen. Ohne diese Schlüssel schaltet sich Web Push
+      # beim Start stillschweigend ab – die Meldung über eine neue Freimeldung
+      # erreicht dann nur, wer die App gerade offen hat. Genau das soll die
+      # App aber nicht sein, deshalb gehören die Schlüssel hierher.
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
       # Optional – ohne SMTP läuft alles, die Administratoren sehen die
       # Passwortanfragen dann nur in der App.
       SMTP_HOST: ${SMTP_HOST:-}
