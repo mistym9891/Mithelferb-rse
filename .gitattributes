@@ -1,13 +1,39 @@
-# Im Repository einheitlich LF, im Arbeitsverzeichnis plattformüblich.
-* text=auto eol=lf
+# Zeilenenden.
+#
+# Anlass: die aus .env.prod.example erzeugte .env kam mit Windows-Zeilenenden
+# auf den Server. Docker Compose liest die Datei zeichengetreu – aus
+# DB_USER=mithelfer wurde dadurch der Benutzername "mithelfer\r", und die
+# Datenbank legte sich beim ersten Start unter diesem Namen an. Danach meldete
+# psql "role 'mithelfer' does not exist", obwohl in der Datei das Richtige
+# stand. Solche Fehler kosten viel Zeit, weil man sie nicht sieht.
+#
+# Alles, was auf einem Linux-Server gelesen oder ausgeführt wird, bekommt
+# deshalb verbindlich LF – unabhängig davon, auf welchem Betriebssystem
+# gearbeitet wird.
 
-# Skripte, die auf dem Linux-Server laufen, brauchen zwingend LF.
-*.sh text eol=lf
-Dockerfile* text eol=lf
-Caddyfile text eol=lf
+*.sh            text eol=lf
+.env.example    text eol=lf
+.env.*.example  text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+Caddyfile*      text eol=lf
+Dockerfile*     text eol=lf
+*.sql           text eol=lf
 
-# Binärdateien nicht anfassen.
-*.png binary
-*.jpg binary
-*.xlsx binary
-*.pdf binary
+# Quelltext und Dokumentation: im Arbeitsverzeichnis nach Plattform, im
+# Repository einheitlich LF.
+*.ts     text
+*.tsx    text
+*.js     text
+*.json   text
+*.css    text
+*.html   text
+*.md     text
+
+# Binärdateien nie anfassen.
+*.png    binary
+*.jpg    binary
+*.svg    text
+*.xlsx   binary
+*.zip    binary
+*.dump   binary

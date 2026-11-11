@@ -78,7 +78,18 @@ mkdir -p /opt/mithelferboerse && cd /opt/mithelferboerse
 cp .env.prod.example .env
 nano .env          # Werte eintragen, siehe unten
 chmod +x deploy/backup.sh
+
+# Falls die Datei von einem Windows-Rechner kommt: Zeilenenden pruefen.
+# Docker Compose liest die Werte zeichengetreu - aus "DB_USER=mithelfer"
+# wuerde mit CRLF der Benutzername "mithelfer", und die Datenbank legt sich
+# beim ersten Start unter diesem Namen an. psql meldet danach
+# 'role "mithelfer" does not exist', obwohl in der Datei das Richtige steht.
+grep -c $'' .env        # muss 0 ergeben
+sed -i 's/$//' .env     # andernfalls korrigieren
 ```
+
+> **Getestet mit Ubuntu 24.04 und 26.04.** Fuer 26.04 ("resolute") stellt
+> Docker eigene Pakete bereit; `get.docker.com` waehlt sie selbsttaetig aus.
 
 In `.env` **unbedingt** setzen:
 
