@@ -2,6 +2,15 @@
 # sie selbstständig. HTTPS ist Pflicht: ohne TLS lässt sich die App nicht zum
 # Startbildschirm hinzufügen und der Service Worker wird nicht aktiv.
 
+# Wer "www." davorsetzt, soll nicht vor einem Verbindungsfehler stehen.
+# Der DNS-Eintrag fuer www zeigt auf denselben Server; ohne diesen Abschnitt
+# hat Caddy fuer den Namen aber kein Zertifikat und bricht den Aufbau ab.
+# Eine dauerhafte Weiterleitung haelt ausserdem eine einzige Adresse fuer
+# Lesezeichen, Startbildschirm-Symbol und Service Worker fest.
+www.{$APP_DOMAIN} {
+	redir https://{$APP_DOMAIN}{uri} permanent
+}
+
 {$APP_DOMAIN} {
 	encode zstd gzip
 
