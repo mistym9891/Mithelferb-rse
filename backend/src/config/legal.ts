@@ -2,21 +2,30 @@
  * Nutzungsbedingungen und Datenschutzerklärung.
  *
  * WICHTIG: Diese Texte sind ein fachlich fundierter Entwurf für eine rein
- * interne Anwendung. Sie ersetzen KEINE Rechtsberatung. Vor dem Produktivgang
- * müssen die mit [BITTE PRÜFEN] markierten Angaben ergänzt und der Text von
- * einer/einem Datenschutzbeauftragten oder einer Kanzlei freigegeben werden.
+ * interne Anwendung. Sie ersetzen KEINE Rechtsberatung und sollten vor dem
+ * Produktivgang von einer Kanzlei oder einer/einem Datenschutzbeauftragten
+ * freigegeben werden.
+ *
+ * Die Angaben zum Verantwortlichen stammen aus Impressum und
+ * Datenschutzerklärung des Maschinen- und Betriebshilfsrings Schwäbisch Hall
+ * (Stand November 2026). Zwei Punkte sind organisatorisch zu bestätigen:
+ * ob ein Datenschutzbeauftragter zu bestellen ist (§ 38 BDSG: ab 20 Personen,
+ * die ständig automatisiert personenbezogene Daten verarbeiten), und ob die
+ * Vereinbarung nach Art. 26 DSGVO zwischen den beteiligten Ringen geschlossen
+ * ist. Treten weitere Ringe bei, ist Abschnitt 1 der Datenschutzerklärung zu
+ * ergänzen.
  *
  * Wird ein Text inhaltlich geändert, MUSS die Version hochgezählt werden –
  * dann wird die Zustimmung bei der nächsten Anmeldung erneut eingeholt.
  */
 
-export const TERMS_VERSION = '1.1';
-export const PRIVACY_VERSION = '1.1';
+export const TERMS_VERSION = '1.2';
+export const PRIVACY_VERSION = '1.2';
 
 export const TERMS_TEXT = `
 # Nutzungsbedingungen der BHD-Regionalplan
 
-**Version ${TERMS_VERSION}, Stand: September 2026**
+**Version ${TERMS_VERSION}, Stand: November 2026**
 
 ## 1. Geltungsbereich und Zweck
 
@@ -94,27 +103,48 @@ sind erneut zu bestätigen.
 
 ## 9. Kontakt
 
-Betreiber: [BITTE PRÜFEN: federführender Ring, Anschrift]
-Ansprechpartner: [BITTE PRÜFEN: Name, E-Mail, Telefon]
+Betreiber:
+
+Maschinen- und Betriebshilfsring Schwäbisch Hall e. V.
+Torstraße 5, 74532 Ilshofen
+Telefon 07904 7700 · info@mbr-sha.de
+
+Ansprechpartner für die App: Fritz Hube (Geschäftsführer),
+Telefon 07904 940221 · bhdapp@mbr-sha.de
 `.trim();
 
 export const PRIVACY_TEXT = `
 # Datenschutzerklärung der BHD-Regionalplan
 
-**Version ${PRIVACY_VERSION}, Stand: September 2026**
+**Version ${PRIVACY_VERSION}, Stand: November 2026**
 
 ## 1. Verantwortlicher
 
 Verantwortlich im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
 
-[BITTE PRÜFEN: federführender Maschinenring, Anschrift, Telefon, E-Mail]
+Maschinen- und Betriebshilfsring Schwäbisch Hall e. V.
+Torstraße 5
+74532 Ilshofen
+
+Telefon: 07904 7700
+Telefax: 07904 7813
+E-Mail: info@mbr-sha.de
+
+Vertretungsberechtigt: Lorenz Maisch (Vorsitzender),
+Fritz Hube (Geschäftsführer)
+Vereinsregister Schwäbisch Hall, Nr. 168
+
+Für Fragen zu dieser Anwendung: bhdapp@mbr-sha.de
 
 Die beteiligten Ringe sind hinsichtlich der gemeinsam genutzten Übersicht
 **gemeinsam Verantwortliche nach Art. 26 DSGVO**. Die Aufgabenverteilung ist in
-einer gesonderten Vereinbarung zu regeln.
-[BITTE PRÜFEN: Vereinbarung nach Art. 26 DSGVO abschließen]
+einer Vereinbarung zwischen den beteiligten Ringen geregelt. Das Wesentliche
+dieser Vereinbarung stellen wir betroffenen Personen auf Anfrage zur Verfügung.
+Ihre Rechte können Sie gegenüber jedem beteiligten Ring geltend machen;
+Anlaufstelle ist die oben genannte Anschrift.
 
-Datenschutzbeauftragte/r: [BITTE PRÜFEN]
+Ein Datenschutzbeauftragter ist nicht bestellt. Anfragen zum Datenschutz
+richten Sie bitte an die oben genannte Anschrift oder an bhdapp@mbr-sha.de.
 
 ## 2. Welche Daten verarbeitet werden
 
@@ -148,8 +178,8 @@ Passwörtern) werden mit Zeitpunkt und handelnder Person protokolliert.
 
 Die Angabe des **Geschlechts** dient allein der farblichen Kennzeichnung auf der
 Karte, weil Einsätze in Familien geschlechtsbezogen angefragt werden. Die Angabe
-ist freiwillig; ohne Angabe wird der Marker neutral dargestellt.
-[BITTE PRÜFEN: Erforderlichkeit dieser Angabe mit der Personalvertretung klären]
+ist freiwillig; ohne Angabe wird der Marker neutral dargestellt. Aus dem
+Verzicht auf die Angabe entsteht kein Nachteil.
 
 ## 4. Wer die Daten sehen kann
 
@@ -165,11 +195,15 @@ Länder außerhalb der EU/des EWR.
 
 ## 5. Auftragsverarbeiter
 
-* **Hosting:** [BITTE PRÜFEN: Anbieter, Standort] – Auftragsverarbeitungsvertrag
-  nach Art. 28 DSGVO erforderlich. Der Serverstandort liegt in Deutschland.
-* **Kartendarstellung:** Die Kartenkacheln werden von der OpenStreetMap
-  Foundation geladen. Dabei wird die IP-Adresse des Endgeräts an deren Server
-  übertragen. Siehe https://osmfoundation.org/wiki/Privacy_Policy
+* **Hosting:** Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen
+  (Amtsgericht Ansbach, HRB 6089). Der Server steht im Rechenzentrum Nürnberg,
+  Deutschland. Grundlage ist ein Auftragsverarbeitungsvertrag nach Art. 28
+  DSGVO.
+* **Kartendarstellung:** Der Kartenhintergrund stammt von **basemap.de**, einem
+  Dienst des Bundesamtes für Kartographie und Geodäsie (BKG), Richard-Strauss-
+  Allee 11, 60598 Frankfurt am Main. Beim Laden der Kartenkacheln wird die
+  IP-Adresse des Endgeräts an dessen Server übertragen. Siehe
+  https://basemap.de/
 * **Geokodierung:** Wohnorte werden einmalig über den Dienst Nominatim der
   OpenStreetMap Foundation in Koordinaten umgerechnet. Übermittelt wird dabei
   nur der Ortsname, kein Personenbezug.
@@ -180,7 +214,8 @@ Länder außerhalb der EU/des EWR.
 * Daten von Beschäftigten werden gelöscht, sobald das Beschäftigungsverhältnis
   endet – spätestens jedoch, wenn der zuständige Ring den Datensatz löscht.
 * Benutzerkonten werden bei Ausscheiden deaktiviert und anschließend gelöscht.
-* Protokolldaten werden nach [BITTE PRÜFEN: z. B. 12 Monaten] gelöscht.
+* Protokolldaten über administrative Vorgänge werden nach **12 Monaten**
+  gelöscht.
 
 ## 7. Ihre Rechte
 
