@@ -131,10 +131,16 @@ const StaffManager: React.FC = () => {
     }
   };
 
-  const field = (label: string, node: React.ReactNode) => (
+  // Dritter Parameter: ein kurzer Hinweis unter dem Feld. Die Eingabemasken
+  // sind jetzt leer – ohne Beispiel ist etwa beim Wohnort nicht erkennbar,
+  // dass auch „Hauptort-Teilort" erkannt wird.
+  const field = (label: string, node: React.ReactNode, hinweis?: string) => (
     <label className="block">
       <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{label}</span>
       {node}
+      {hinweis && (
+        <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">{hinweis}</span>
+      )}
     </label>
   );
 
@@ -211,10 +217,12 @@ const StaffManager: React.FC = () => {
           className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-3 sm:p-4 mb-6
                      grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
         >
-          {field('Vorname *', <input className={input} required value={form.first_name ?? ''} onChange={e => setForm({ ...form, first_name: e.target.value })} />)}
-          {field('Name *', <input className={input} required value={form.last_name ?? ''} onChange={e => setForm({ ...form, last_name: e.target.value })} />)}
-          {field('Kürzel *', <input className={input} required maxLength={6} value={form.abbreviation ?? ''} onChange={e => setForm({ ...form, abbreviation: e.target.value })} />)}
-          {field('Wohnort *', <input className={input} required value={form.town ?? ''} onChange={e => setForm({ ...form, town: e.target.value })} />)}
+          {field('Vorname *', <input className={input} required placeholder="z. B. Anna" value={form.first_name ?? ''} onChange={e => setForm({ ...form, first_name: e.target.value })} />)}
+          {field('Name *', <input className={input} required placeholder="z. B. Bauer" value={form.last_name ?? ''} onChange={e => setForm({ ...form, last_name: e.target.value })} />)}
+          {field('Kürzel *', <input className={input} required maxLength={6} placeholder="z. B. AB" value={form.abbreviation ?? ''} onChange={e => setForm({ ...form, abbreviation: e.target.value })} />,
+            'Erscheint auf der Karte und in der Tabelle. Je Ring nur einmal vergeben.')}
+          {field('Wohnort *', <input className={input} required placeholder="z. B. Ilshofen oder Neudenau-Kressbach" value={form.town ?? ''} onChange={e => setForm({ ...form, town: e.target.value })} />,
+            'Hauptort und Teilort mit Bindestrich sind möglich. Daraus wird die Lage auf der Karte berechnet.')}
           {field('Geschlecht', (
             <select className={input} value={form.gender ?? 'unknown'} onChange={e => setForm({ ...form, gender: e.target.value as Staff['gender'] })}>
               <option value="female">weiblich</option>
@@ -230,9 +238,10 @@ const StaffManager: React.FC = () => {
             </select>
           ))}
           {field('Std./Tag', <input className={input} type="number" inputMode="decimal" step="0.5" min="0" max="24" value={form.hours_per_day ?? 8} onChange={e => setForm({ ...form, hours_per_day: parseFloat(e.target.value) })} />)}
-          {field('Einsatzleitung', <input className={input} value={form.supervisor ?? ''} onChange={e => setForm({ ...form, supervisor: e.target.value })} />)}
-          {field('Telefon Einsatzleitung', <input className={input} type="tel" inputMode="tel" value={form.phone ?? ''} onChange={e => setForm({ ...form, phone: e.target.value })} />)}
-          {field('E-Mail Einsatzleitung', <input className={input} type="email" inputMode="email" autoCapitalize="none" value={form.email ?? ''} onChange={e => setForm({ ...form, email: e.target.value })} />)}
+          {field('Einsatzleitung', <input className={input} placeholder="z. B. Anna Bauer" value={form.supervisor ?? ''} onChange={e => setForm({ ...form, supervisor: e.target.value })} />,
+            'Wer bei dieser Kraft Auskunft gibt – auch für andere Ringe sichtbar.')}
+          {field('Telefon Einsatzleitung', <input className={input} type="tel" inputMode="tel" placeholder="z. B. 07904 7700" value={form.phone ?? ''} onChange={e => setForm({ ...form, phone: e.target.value })} />)}
+          {field('E-Mail Einsatzleitung', <input className={input} type="email" inputMode="email" autoCapitalize="none" placeholder="z. B. name@mr-beispiel.de" value={form.email ?? ''} onChange={e => setForm({ ...form, email: e.target.value })} />)}
           <div className="sm:col-span-2 lg:col-span-3">
             <button type="submit" disabled={saving} className="w-full sm:w-auto bg-mr-green hover:bg-mr-dark disabled:opacity-50 text-white px-5 h-11 rounded text-sm font-medium">
               {saving ? 'Speichert…' : editingId ? 'Änderungen speichern' : 'Anlegen'}

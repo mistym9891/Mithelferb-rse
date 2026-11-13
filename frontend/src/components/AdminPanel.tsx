@@ -249,16 +249,17 @@ const AdminPanel: React.FC<Props> = ({ me, rings, onOpenRequestsChange, reloadSi
               className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-3 sm:p-4 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Name *</span>
-            <input className={input} required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <input className={input} required placeholder="z. B. Anna Bauer" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
           </label>
           <label className="block">
             <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dienstliche E-Mail *</span>
             <input className={input} type="email" inputMode="email" autoCapitalize="none" required
+                   placeholder="z. B. a.bauer@mr-beispiel.de"
                    value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </label>
           <label className="block">
             <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Telefon</span>
-            <input className={input} type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            <input className={input} type="tel" placeholder="z. B. 07904 7700" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
           </label>
           <label className="block">
             <span className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</span>
