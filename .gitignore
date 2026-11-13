@@ -50,3 +50,9 @@ backend/data/geocode-cache.json
 # Unterlagen fuer den Kundentest: enthalten Zugangsdaten und eine nur
 # zeitweise gueltige oeffentliche Adresse. Gehoert nicht ins Repository.
 zugang/
+
+# Zusammengestelltes Uebergabepaket: reine Kopien aus deploy/ und README.md
+# plus ein Quelltext-Archiv. Wird bei Bedarf neu erzeugt und gehoert deshalb
+# nicht in die Versionsverwaltung - sonst laeuft es dem Original davon.
+uebergabe/
+BHD-Regionalplan_Uebergabe.zip
