@@ -20,7 +20,7 @@
  */
 
 export const TERMS_VERSION = '1.2';
-export const PRIVACY_VERSION = '1.2';
+export const PRIVACY_VERSION = '1.3';
 
 export const TERMS_TEXT = `
 # Nutzungsbedingungen der BHD-Regionalplan
@@ -138,13 +138,30 @@ Für Fragen zu dieser Anwendung: bhdapp@mbr-sha.de
 
 Die beteiligten Ringe sind hinsichtlich der gemeinsam genutzten Übersicht
 **gemeinsam Verantwortliche nach Art. 26 DSGVO**. Die Aufgabenverteilung ist in
-einer Vereinbarung zwischen den beteiligten Ringen geregelt. Das Wesentliche
-dieser Vereinbarung stellen wir betroffenen Personen auf Anfrage zur Verfügung.
-Ihre Rechte können Sie gegenüber jedem beteiligten Ring geltend machen;
-Anlaufstelle ist die oben genannte Anschrift.
+einer Vereinbarung zwischen den beteiligten Ringen geregelt.
 
-Ein Datenschutzbeauftragter ist nicht bestellt. Anfragen zum Datenschutz
-richten Sie bitte an die oben genannte Anschrift oder an bhdapp@mbr-sha.de.
+**Das Wesentliche dieser Vereinbarung** (Art. 26 Abs. 2 DSGVO):
+
+* Jeder Ring bleibt für die Daten **seiner eigenen** Beschäftigten
+  verantwortlich. Er pflegt sie, hält sie aktuell und löscht sie.
+* Jeder Ring entscheidet selbst, ob und wann er eine Kraft als frei meldet.
+  Erst damit wird sie für die übrigen Ringe sichtbar.
+* Vor- und Nachname werden an andere Ringe **technisch nicht übertragen**.
+* Der Maschinen- und Betriebshilfsring Schwäbisch Hall e. V. betreibt die
+  Anwendung technisch für alle Beteiligten und ist Ansprechpartner für den
+  Betrieb.
+* **Anlaufstelle für Betroffene ist der eigene Ring.** Sie können Ihre Rechte
+  aber nach Art. 26 Abs. 3 DSGVO gegenüber **jedem** beteiligten Ring geltend
+  machen; der angesprochene Ring leitet das Anliegen weiter.
+
+Die vollständige Vereinbarung stellen wir Ihnen auf Anfrage zur Verfügung.
+
+## 1a. Datenschutz in den Ringen
+
+Ein gesonderter Datenschutzbeauftragter ist nicht bestellt. Die Verantwortung
+für den Datenschutz liegt bei der **Geschäftsführung des jeweiligen Rings**.
+Wenden Sie sich mit Fragen und Anliegen an die Geschäftsführung Ihres Rings;
+für die Anwendung selbst erreichen Sie uns unter bhdapp@mbr-sha.de.
 
 ## 2. Welche Daten verarbeitet werden
 
